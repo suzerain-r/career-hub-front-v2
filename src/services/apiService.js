@@ -172,6 +172,8 @@ export const addReview = async (review) => {
 
 ////
 export const fetchUniversity = async (id) => {
+    const token = localStorage.getItem("authToken");
+
     const response = await fetch(`${baseUrl}/university/${id}`, {
         method: 'GET',
         headers: {
@@ -183,6 +185,7 @@ export const fetchUniversity = async (id) => {
 }
 
 export const fetchStudent = async (id) => {
+    const token = localStorage.getItem("authToken");
     const response = await fetch(`${baseUrl}/student/${id}`, {
         method: 'GET',
         headers: {
