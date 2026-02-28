@@ -14,10 +14,9 @@ export const decodeToken = () => {
 
 export const getRoleFromToken = () => {
     const decoded = decodeToken();
-    return decoded['user-role'];
+    return decoded ? decoded['user-role'] : null;
 };
-
 export const getIdFromToken = () => {
     const decoded = decodeToken();
-    return decoded['user-id'];
+    return decoded ? decoded['user-id'] : null;
 };
