@@ -18,9 +18,9 @@ export const login = async (username, password) => {
         if (response.ok) {
             console.log(data);
             localStorage.setItem('authToken', data.token);
-            return { success: true};
+            return { success: true };
         } else {
-            return { success: false, message: data.message};
+            return { success: false, message: data.message };
         }
     } catch (error) {
         console.error('Error during login:', error);

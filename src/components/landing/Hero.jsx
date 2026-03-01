@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { assets } from "../assets/assets.js";
-import Navbar from "./Header.jsx";
+import { assets } from "../../assets/assets.js";
 
 const Hero = () => {
     return (

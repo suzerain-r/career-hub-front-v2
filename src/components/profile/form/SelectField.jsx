@@ -5,14 +5,14 @@ const base =
     "focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500";
 
 export default function SelectField({
-                                        label,
-                                        name,
-                                        value,
-                                        onChange,
-                                        options = [],
-                                        placeholder = "Select...",
-                                        disabled,
-                                    }) {
+    label,
+    name,
+    value,
+    onChange,
+    options = [],
+    placeholder = "Select...",
+    disabled,
+}) {
     return (
         <div className="relative w-full">
             <label className="mb-2 block text-sm font-medium text-gray-900">{label}</label>
@@ -26,18 +26,18 @@ export default function SelectField({
                 ))}
             </select>
 
-            <span className="pointer-events-none absolute right-4 top-[46px] text-gray-500">
-        <svg width="20" height="20" viewBox="0 0 20 20">
-          <path
-              d="M5.5 7.5L10 12l4.5-4.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-          />
-        </svg>
-      </span>
+            <span className="pointer-events-none absolute right-4 top-11.5 text-gray-500">
+                <svg width="20" height="20" viewBox="0 0 20 20">
+                    <path
+                        d="M5.5 7.5L10 12l4.5-4.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
+                </svg>
+            </span>
         </div>
     );
 }

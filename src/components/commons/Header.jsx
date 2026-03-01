@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { assets } from "../assets/assets.js";
+import { assets } from "../../assets/assets.js";
 
-const Navbar = () => {
+const Header = () => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
 
     useEffect(() => {
@@ -56,4 +56,4 @@ const Navbar = () => {
     )
 }
 
-export default Navbar;
+export default Header;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { assets } from "../assets/assets.js";
+import { assets } from "../../assets/assets.js";
 
 const AuthHeader = () => {
     const navigate = useNavigate();

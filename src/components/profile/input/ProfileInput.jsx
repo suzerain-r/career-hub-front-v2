@@ -1,14 +1,14 @@
 import React from "react";
 
 const ProfileInput = ({
-                          title,
-                          type,
-                          placeholder,
-                          name,
-                          value,
-                          handleChange,
-                          isEditing = true,
-                      }) => {
+    title,
+    type,
+    placeholder,
+    name,
+    value,
+    handleChange,
+    isEditing = true,
+}) => {
     return (
         <div className="w-full">
             <label className="mb-2 block text-sm font-semibold text-gray-800">

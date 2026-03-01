@@ -1,12 +1,12 @@
 import React from "react";
-import Header from "../../components/Header.jsx";
-import LandingCount from "../../components/LandingCount.jsx";
+import Header from "../../components/commons/Header.jsx";
+import LandingCount from "../../components/landing/LandingCount.jsx";
 import { assets } from "../../assets/assets.js";
-import LandingUniversityCardList from "../../components/LandingUniversityCardList.jsx";
-import About from "../../components/About.jsx";
-import Footer from "../../components/Footer.jsx";
-import Hero from "../../components/Hero.jsx";
-import ContactUs from "../../components/ContactUs.jsx";
+import LandingUniversityCardList from "../../components/landing/LandingUniversityCardList.jsx";
+import About from "../../components/landing/About.jsx";
+import Footer from "../../components/commons/Footer.jsx";
+import Hero from "../../components/landing/Hero.jsx";
+import ContactUs from "../../components/landing/ContactUs.jsx";
 
 const Landing = () => {
 

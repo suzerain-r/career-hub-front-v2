@@ -1,4 +1,4 @@
-import {getIdFromToken} from "../utils/jwtDecode.js";
+import { getIdFromToken } from "../utils/jwtDecode.js";
 
 const baseUrl = "http://localhost:8080";
 
@@ -136,7 +136,7 @@ export const fetchReviews = async (id) => {
 };
 
 export const fetchSenders = async (reviewList) => {
-    try{
+    try {
         const promises = reviewList.map((review) =>
             fetch(`${baseUrl}/${review.senderRole.toLowerCase()}/${review.senderId}`, {
                 method: 'GET',

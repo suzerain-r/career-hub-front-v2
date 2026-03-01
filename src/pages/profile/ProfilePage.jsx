@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getIdFromToken, getRoleFromToken } from "../../utils/jwtDecode.js";
-import SettingsLayout from "../../components/settings/SettingsLayout.jsx";
-import ProfileForm from "../../components/settings/ProfileForm.jsx";
-import ResumeSection from "../../components/settings/ResumeSection.jsx";
+import SettingsLayout from "../../components/profile/settings/SettingsLayout.jsx";
+import ProfileForm from "../../components/profile/settings/ProfileForm.jsx";
+import ResumeSection from "../../components/profile/settings/ResumeSection.jsx";
 import { profileConfigs } from "../../config/profileConfig.js";
 import { loadProfile, saveProfile } from "../../services/profileService.js";
-import Header from "../../components/Header.jsx";
+import Header from "../../components/commons/Header.jsx";
 
-export default function SettingsPage() {
+export default function ProfilePage() {
     const userId = getIdFromToken();
     const role = getRoleFromToken(); // STUDENT | UNIVERSITY | COMPANY
 

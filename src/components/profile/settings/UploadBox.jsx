@@ -13,7 +13,7 @@ export default function UploadBox({ title = "Profile Picture", hint, file, onFil
                     onChange={(e) => onFile?.(e.target.files?.[0] || null)}
                 />
 
-                <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 px-6 text-center">
+                <div className="flex min-h-70 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 px-6 text-center">
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white ring-1 ring-gray-200">
                         <svg width="26" height="26" viewBox="0 0 24 24" className="text-gray-400">
                             <path

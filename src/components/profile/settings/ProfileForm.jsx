@@ -5,14 +5,14 @@ import TextAreaField from "../form/TextAreaField.jsx";
 import UploadBox from "./UploadBox.jsx";
 
 export default function ProfileForm({
-                                        config,
-                                        values,
-                                        onChange,
-                                        isEditing,
-                                        photoFile,
-                                        setPhotoFile,
-                                        onSave,
-                                    }) {
+    config,
+    values,
+    onChange,
+    isEditing,
+    photoFile,
+    setPhotoFile,
+    onSave,
+}) {
     return (
         <div className="space-y-12">
             {config.sections.map((section) => (
@@ -80,7 +80,7 @@ export default function ProfileForm({
                                 <button
                                     type="button"
                                     onClick={onSave}
-                                    className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-8 py-4 text-base font-semibold text-white hover:bg-blue-700 active:bg-blue-800 sm:w-[240px]"
+                                    className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-8 py-4 text-base font-semibold text-white hover:bg-blue-700 active:bg-blue-800 sm:w-60"
                                 >
                                     Save Changes
                                 </button>
