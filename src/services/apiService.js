@@ -27,6 +27,17 @@ const homeService = {
         return response.json();
     },
 
+    getUniversitiesCount: async () => {
+        const response = await fetch(`${baseUrl}/university/search`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return response.json();
+    },
+
     getAverageRatingsForUniversities: async (universityList) => {
         try {
             const promises = universityList.map((university) =>

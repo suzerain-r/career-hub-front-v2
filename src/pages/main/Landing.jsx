@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../../components/commons/Header.jsx";
 import LandingCount from "../../components/landing/LandingCount.jsx";
 import { assets } from "../../assets/assets.js";
@@ -7,48 +7,28 @@ import About from "../../components/landing/About.jsx";
 import Footer from "../../components/commons/Footer.jsx";
 import Hero from "../../components/landing/Hero.jsx";
 import ContactUs from "../../components/landing/ContactUs.jsx";
+import homeService, { fetchUniversities } from "../../services/apiService.js";
 
 const Landing = () => {
 
-    // const [countStudents, setCountStudents] = useState('');
-    // const [countUniversities, setCountUniversities] = useState('');
-    // const [countCompanies, setCountCompanies] = useState('');
-    //
-    // const [universities, setUniversities] = useState([]);
-    // const [selectedUniversity, setSelectedUniversity] = useState(null);
-    //
-    //
-    // const handleCount = () => {
-    //
-    //     homeService.getStudentsCount().then((data) => {setCountStudents(data['totalElements']);});
-    //
-    //     homeService.getCompaniesCount().then((data) => {setCountCompanies(data['totalElements']);});
-    //
-    // }
-    //
-    // const handleUniversities = () => {
-    //     fetchUniversities().then((data) => {
-    //         homeService.getAverageRatingsForUniversities(data['content']).then((universitiesWithRatings) => {
-    //             setUniversities(universitiesWithRatings.slice(0, 6));
-    //         });
-    //         setCountUniversities(data['totalElements']);
-    //     });
-    // }
-    //
-    //
-    // useEffect(() => {
-    //     handleCount();
-    //     handleUniversities();
-    // }, []);
-    //
-    //
-    // const openModal = (university) => {
-    //     setSelectedUniversity(university);
-    // };
-    //
-    // const closeModal = () => {
-    //     setSelectedUniversity(null);
-    // };
+    const [countStudents, setCountStudents] = useState('');
+    const [countUniversities, setCountUniversities] = useState('');
+    const [countCompanies, setCountCompanies] = useState('');
+
+
+    const handleCount = () => {
+
+        homeService.getStudentsCount().then((data) => { setCountStudents(data['totalElements']); });
+
+        homeService.getCompaniesCount().then((data) => { setCountCompanies(data['totalElements']); });
+
+        homeService.getUniversitiesCount().then((data) => { setCountUniversities(data['totalElements']); });
+
+    }
+
+    useEffect(() => {
+        handleCount();
+    }, []);
 
 
     return (
@@ -60,23 +40,34 @@ const Landing = () => {
                 <div className='flex flex-wrap justify-center gap-8'>
                     <LandingCount
                         logo={assets.candidate_icon}
-                        count={'100+'}
+                        count={countStudents}
                         type={'Candidates'}
                     />
                     <LandingCount
                         logo={assets.university_icon}
-                        count={'100+'}
+                        count={countUniversities}
                         type={'Universities'}
                     />
                     <LandingCount
                         logo={assets.company_icon}
-                        count={'100+'}
+                        count={countCompanies}
                         type={'Companies'}
                     />
                 </div>
             </div>
+            <picture>
+                <source
+                    media="(min-width: 768px)"
+                    srcSet={assets.how_work_info}
+                />
+                <img
+                    src={assets.how_work_mobile}
+                    alt=""
+                    className="w-full"
+                />
+            </picture>
             <LandingUniversityCardList />
-            <ContactUs />
+            {/* <ContactUs /> */}
             <Footer />
 
         </div>

@@ -5,6 +5,7 @@ import email_icon from './email-icon.svg';
 import favourite_active from './favourite_active.svg';
 import favourite_not_active from './favourite_not_active.svg';
 import how_work_info from './how-work-info.svg';
+import how_work_mobile from './how-work-mobile.svg'
 import location_icon from './location-icon.svg';
 import logo from './logo.svg';
 import modal_location_icon from './modal-location-icon.svg';
@@ -25,6 +26,7 @@ export const assets = {
     favourite_active,
     favourite_not_active,
     how_work_info,
+    how_work_mobile,
     location_icon,
     logo,
     modal_location_icon,

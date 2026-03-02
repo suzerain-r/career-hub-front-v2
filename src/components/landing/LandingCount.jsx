@@ -27,13 +27,6 @@ const LandingCount = ({ logo, count, type }) => {
                 </p>
             </div>
         </div>
-        // <div className="count_item">
-        //     <img src={logo} className="university_logo" alt={""}/>
-        //     <div className="count_info">
-        //         <h2>{count}</h2>
-        //         <p>{type}</p>
-        //     </div>
-        // </div>
 
     )
 };

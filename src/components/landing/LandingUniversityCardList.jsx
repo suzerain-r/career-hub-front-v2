@@ -1,14 +1,31 @@
-import React from 'react';
+import React, {useEffect, useState} from "react";
 import { assets } from "../../assets/assets.js";
+import homeService, { fetchUniversities } from "../../services/apiService.js";
 
-const LandingUniversityCardList = ({ openModal }) => {
-    const universities = [
-        { id: 1, name: "Harvard University", location: "Cambridge, USA", averageRating: 4.8 },
-        { id: 2, name: "Stanford University", location: "California, USA", averageRating: 4.7 },
-        { id: 3, name: "University of Oxford", location: "Oxford, UK", averageRating: 4.9 },
-        { id: 4, name: "Massachusetts Institute of Technology", location: "Massachusetts, USA", averageRating: 4.8 },
-        { id: 5, name: "University of Tokyo", location: "Tokyo, Japan", averageRating: 4.6 }
-    ];
+const LandingUniversityCardList = () => {
+
+    // const universities = [
+    //     { id: 1, name: "Harvard University", location: "Cambridge, USA", averageRating: 4.8 },
+    //     { id: 2, name: "Stanford University", location: "California, USA", averageRating: 4.7 },
+    //     { id: 3, name: "University of Oxford", location: "Oxford, UK", averageRating: 4.9 },
+    //     { id: 4, name: "Massachusetts Institute of Technology", location: "Massachusetts, USA", averageRating: 4.8 },
+    //     { id: 5, name: "University of Tokyo", location: "Tokyo, Japan", averageRating: 4.6 }
+    // ];
+
+    const [universities, setUniversities] = useState([]);
+    const [selectedUniversity, setSelectedUniversity] = useState(null);
+
+    const handleUniversities = () => {
+        fetchUniversities().then((data) => {
+            homeService.getAverageRatingsForUniversities(data['content']).then((universitiesWithRatings) => {
+                setUniversities(universitiesWithRatings.slice(0, 6));
+            });
+        });
+    }
+
+    useEffect(() => {
+        handleUniversities();
+    }, []);
 
     return (
         <div className="container mx-auto py-16 px-6 lg:px-32 w-full overflow-hidden">

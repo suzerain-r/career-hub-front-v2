@@ -1,24 +1,24 @@
 
 import { assets } from "../../assets/assets.js";
 
-const CardList = ({ students, candidateIcon, toggleFavorite, isFavorite }) => {
+const CardList = ({ students, icon, toggleFavorite, isFavorite }) => {
     return (
-        <div className="w-full lg:w-3/4 flex flex-col gap-6">
+        <div className="w-full lg:w-3/4 flex flex-col gap-4">
             {students.map((student) => (
                 <div
                     key={student.id}
-                    className="flex flex-col sm:flex-row gap-4 p-6 bg-white border border-gray-200 rounded-xl hover:border-blue-500 transition"
+                    className="flex flex-row gap-3 p-3 sm:p-6 bg-white border border-gray-200 rounded-xl hover:border-blue-500 transition"
                 >
                     <img
-                        src={candidateIcon}
+                        src={icon}
                         alt=""
-                        className="w-20 h-20 object-contain"
+                        className="w-18 h-18 sm:w-20 sm:h-20 object-contain"
                     />
 
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center w-full gap-4">
+                    <div className="flex justify-between items-center sm:items-center w-full gap-3">
 
-                        <div>
-                            <h3 className="text-blue-500 font-semibold text-lg">
+                        <div className="flex flex-col">
+                            <h3 className="font-medium text-base sm:text-lg">
                                 {student.firstName} {student.lastName}
                             </h3>
                             <p className="text-gray-500 text-sm">
@@ -26,7 +26,7 @@ const CardList = ({ students, candidateIcon, toggleFavorite, isFavorite }) => {
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
                             <button
                                 onClick={() => toggleFavorite(student.ownerId)}
                                 className="hover:opacity-80"
@@ -37,11 +37,17 @@ const CardList = ({ students, candidateIcon, toggleFavorite, isFavorite }) => {
                                             ? assets.favourite_active
                                             : assets.favourite_not_active
                                     }
+
                                     alt=""
+                                    className="w-6 h-6 sm:w-7 sm:h-7"
                                 />
                             </button>
 
-                            <button className="bg-blue-50 text-blue-500 px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white transition">
+                            <button className="lg:hidden bg-blue-50 text-blue-500 px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white transition">
+                                →
+                            </button>
+
+                            <button className="hidden lg:inline-block bg-blue-50 text-blue-500 px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white transition">
                                 View Profile →
                             </button>
                         </div>

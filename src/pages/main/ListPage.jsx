@@ -11,6 +11,8 @@ const mockStudents = [
     { id: 1, ownerId: 101, firstName: "John", lastName: "Doe", degree: "BACHELOR", gpa: 3.5 },
     { id: 2, ownerId: 102, firstName: "Anna", lastName: "Smith", degree: "MASTER", gpa: 3.8 },
     { id: 3, ownerId: 103, firstName: "David", lastName: "Brown", degree: "DOCTORATE", gpa: 3.2 },
+    { id: 4, ownerId: 103, firstName: "David", lastName: "Brown", degree: "DOCTORATE", gpa: 3.2 },
+    { id: 5, ownerId: 103, firstName: "David", lastName: "Brown", degree: "DOCTORATE", gpa: 3.2 },
 ];
 
 const ListPage = () => {
@@ -49,6 +51,8 @@ const ListPage = () => {
                 : [...prev, id]
         );
     };
+
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // const userId = getIdFromToken();
     // const userRole = getRoleFromToken();
@@ -189,21 +193,23 @@ const ListPage = () => {
             <Header />
 
             {/* Search Section */}
-            <section className="bg-gray-100 mt-20 py-12 px-4">
+            <div className="bg-gray-100 mt-20 py-8 px-4">
                 <div className="max-w-7xl mx-auto">
-                    <h1 className="text-2xl font-bold mb-6">Candidates</h1>
+                    <h1 className="text-2xl font-medium mb-6">Candidates</h1>
 
                     <SearchBar
                         filters={searchFilters}
                         onFilterChange={(name, value) =>
                             setSearchFilters(prev => ({ ...prev, [name]: value }))
                         }
+                        onOpenFilters={() => setIsSidebarOpen(true)}
                     />
+
                 </div>
-            </section>
+            </div>
 
             {/* Main Section */}
-            <section className="px-4 py-8">
+            <div className="px-4 py-8">
                 <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
 
                     <SideBar
@@ -212,16 +218,19 @@ const ListPage = () => {
                             setFilters(prev => ({ ...prev, [name]: value }))
                         }
                         onClearFilters={() => setFilters({ degree: '', gpa: '' })}
+                        isOpen={isSidebarOpen}
+                        onClose={() => setIsSidebarOpen(false)}
                     />
+
 
                     <CardList
                         students={students}
-                        candidateIcon={assets.candidate_icon}
+                        icon={assets.candidate_icon}
                         toggleFavorite={toggleFavorite}
                         isFavorite={(id) => favorites.includes(id)}
                     />
                 </div>
-            </section>
+            </div>
 
             <Pagination
                 currentPage={currentPage}
@@ -230,6 +239,7 @@ const ListPage = () => {
             />
 
             <Footer />
+
 
             {/* {selectedStudent && (
                 <CandidateModal
