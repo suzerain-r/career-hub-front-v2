@@ -36,21 +36,29 @@ const Header = () => {
                 <img onClick={() => setShowMobileMenu(true)} src={assets.menu_icon}
                     className='md:hidden w-7 cursor-pointer' alt='' />
             </div>
-            <div
-                className={`md:hidden ${showMobileMenu ? 'fixed w-3/4' : 'h-0 w-0'} right-0 top-0 bottom-0 overflow-hidden bg-[#0A65CC] transition-all`}>
-                <div className='flex justify-end p-5 cursor-pointer'>
-                    <XMarkIcon onClick={() => setShowMobileMenu(false)} className="w-9 h-9 text-white" />
+
+            <div className={`fixed inset-0 z-50 md:hidden transition-opacity duration-300 ${showMobileMenu ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
+                <div
+                    onClick={() => setShowMobileMenu(false)}
+                    className="absolute inset-0 bg-black/40"
+                />
+
+                <div className={`absolute right-0 top-0 h-full w-3/4 max-w-xs bg-[#0A65CC] transform transition-transform duration-300 ease-out ${showMobileMenu ? "translate-x-0" : "translate-x-full"}`}>
+                    <div className='flex justify-end p-5 cursor-pointer'>
+                        <XMarkIcon
+                            onClick={() => setShowMobileMenu(false)}
+                            className="w-9 h-9 text-white"
+                        />
+                    </div>
+
+                    <ul className='flex flex-col items-center gap-2 mt-5 px-5 text-lg text-white'>
+                        <a onClick={() => setShowMobileMenu(false)} className='px-4 py-2'>Home</a>
+                        <a onClick={() => setShowMobileMenu(false)} className='px-4 py-2'>Students</a>
+                        <a onClick={() => setShowMobileMenu(false)} className='px-4 py-2'>Universities</a>
+                        <a onClick={() => setShowMobileMenu(false)} className='px-4 py-2'>Companies</a>
+                    </ul>
+
                 </div>
-                <ul className='flex flex-col items-center gap-2 mt-5 px-5 text-lg text-white'>
-                    <a onClick={() => setShowMobileMenu(false)} href="#"
-                        className='px-4 py2 rounded-full inline-block'>Home</a>
-                    <a onClick={() => setShowMobileMenu(false)} href="#"
-                        className='px-4 py2 rounded-full inline-block'>Students</a>
-                    <a onClick={() => setShowMobileMenu(false)} href="#"
-                        className='px-4 py2 rounded-full inline-block'>Universities</a>
-                    <a onClick={() => setShowMobileMenu(false)} href="#"
-                        className='px-4 py2 rounded-full inline-block'>Companies</a>
-                </ul>
             </div>
         </div>
 

@@ -1,13 +1,45 @@
-const SearchBar = ({ filters, onFilterChange, onOpenFilters }) => {
+const SearchBar = ({
+    filters,
+    fields,
+    placeholder,
+    onFilterChange,
+    onOpenFilters
+}) => {
     return (
         <div className="bg-white shadow-md rounded-lg flex flex-col sm:flex-row gap-4 p-4">
+
             <input
                 type="text"
-                placeholder="Search"
-                value={filters.firstName}
-                onChange={(e) => onFilterChange('firstName', e.target.value)}
+                placeholder={placeholder}
+                value={filters.search || ""}
+                onChange={(e) => onFilterChange("search", e.target.value)}
                 className="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:border-blue-500"
             />
+
+            {fields.map((field) => {
+                if (field.type === "select") {
+                    return (
+                        <select
+                            key={field.name}
+                            value={filters[field.name] || ""}
+                            onChange={(e) =>
+                                onFilterChange(field.name, e.target.value)
+                            }
+                            className="border border-gray-300 rounded-md px-4 py-2"
+                        >
+                            <option value="">All {field.name}</option>
+
+                            {field.options.map(option => (
+                                <option key={option} value={option}>
+                                    {option}
+                                </option>
+                            ))}
+                        </select>
+                    );
+                }
+
+                return null;
+            })}
 
             <div className="flex justify-between">
                 <button

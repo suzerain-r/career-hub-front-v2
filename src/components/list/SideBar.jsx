@@ -1,12 +1,34 @@
-import { assets } from "../../assets/assets";
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
-const SideBar = ({ filters, onFilterChange, onClearFilters, isOpen, onClose }) => {
+const SideBar = ({ filters, filterConfig, onFilterChange, onClearFilters, isOpen, onClose }) => {
     return (
         <>
+            {/* Desktop Sidebar */}
             <div className="lg:w-1/4 hidden lg:block border border-gray-200 rounded-xl p-6 h-fit">
 
-                <h4 className="mb-4 font-medium text-lg">Degree</h4>
+                {Object.entries(filterConfig).map(([filterName, values]) => (
+                    <div key={filterName}>
+                        <h4 className="mb-4 font-medium text-lg capitalize">
+                            {filterName}
+                        </h4>
+
+                        <div className="flex flex-col gap-2 mb-6">
+                            {values.map((value) => (
+                                <label key={value} className="flex items-center gap-2 text-gray-600">
+                                    <input
+                                        type="radio"
+                                        value={value}
+                                        checked={filters[filterName] === value}
+                                        onChange={(e) => onFilterChange(filterName, e.target.value)}
+                                    />
+                                    {value}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+
+                {/* <h4 className="mb-4 font-medium text-lg">Degree</h4>
                 <div className="flex flex-col gap-2 mb-6">
                     {['BACHELOR', 'MASTER', 'DOCTORATE'].map((degree) => (
                         <label key={degree} className="flex items-center gap-2 text-gray-600">
@@ -36,7 +58,7 @@ const SideBar = ({ filters, onFilterChange, onClearFilters, isOpen, onClose }) =
                             {gpa}
                         </label>
                     ))}
-                </div>
+                </div> */}
 
                 <button
                     onClick={onClearFilters}
@@ -44,59 +66,66 @@ const SideBar = ({ filters, onFilterChange, onClearFilters, isOpen, onClose }) =
                 >
                     Clear Filters
                 </button>
-
             </div>
 
+            <div
+                className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 
+                ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+            >
+                <div
+                    className="absolute inset-0 bg-black/40"
+                    onClick={onClose}
+                />
 
-            {isOpen && (
-                <div className="fixed inset-0 z-50 flex">
-
-                    <div className="bg-white w-3/4 max-w-xs h-full p-5">
-                        <div className='flex justify-end cursor-pointer'>
-                            <XMarkIcon onClick={onClose} className="w-9 h-9 text-[#0A65CC]"/>
-                        </div>
-
-                        <h4 className="mb-4 font-medium text-lg">Degree</h4>
-                        <div className="flex flex-col gap-2 mb-6">
-                            {['BACHELOR', 'MASTER', 'DOCTORATE'].map((degree) => (
-                                <label key={degree} className="flex items-center gap-2 text-gray-600">
-                                    <input
-                                        type="radio"
-                                        value={degree}
-                                        checked={filters.degree === degree}
-                                        onChange={(e) => onFilterChange('degree', e.target.value)}
-                                        className="w-4 h-4"
-                                    />
-                                    {degree}
-                                </label>
-                            ))}
-                        </div>
-
-                        <h4 className="mb-4 font-medium text-lg">GPA</h4>
-                        <div className="flex flex-col gap-2">
-                            {['0.0 - 2.0', '2.0 - 3.0', '3.0 - 4.0'].map((gpa) => (
-                                <label key={gpa} className="flex items-center gap-2 text-gray-600">
-                                    <input
-                                        type="radio"
-                                        value={gpa}
-                                        checked={filters.gpa === gpa}
-                                        onChange={(e) => onFilterChange('gpa', e.target.value)}
-                                        className="w-4 h-4"
-                                    />
-                                    {gpa}
-                                </label>
-                            ))}
-                        </div>
-
-                        <button
-                            onClick={onClearFilters}
-                            className="mt-6 w-full bg-blue-50 text-blue-500 py-2 rounded-md hover:border hover:border-blue-500 transition"
-                        >
-                            Clear Filters
-                        </button>
+                <div
+                    className={`absolute left-0 top-0 h-full w-3/4 max-w-xs bg-white p-5
+                    transform transition-transform duration-300
+                    ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+                >
+                    <div className="flex justify-end cursor-pointer">
+                        <XMarkIcon onClick={onClose} className="w-9 h-9 text-[#0A65CC]" />
                     </div>
+
+                    <h4 className="mb-4 font-medium text-lg">Degree</h4>
+                    <div className="flex flex-col gap-2 mb-6">
+                        {['BACHELOR', 'MASTER', 'DOCTORATE'].map((degree) => (
+                            <label key={degree} className="flex items-center gap-2 text-gray-600">
+                                <input
+                                    type="radio"
+                                    value={degree}
+                                    checked={filters.degree === degree}
+                                    onChange={(e) => onFilterChange('degree', e.target.value)}
+                                    className="w-4 h-4"
+                                />
+                                {degree}
+                            </label>
+                        ))}
+                    </div>
+
+                    <h4 className="mb-4 font-medium text-lg">GPA</h4>
+                    <div className="flex flex-col gap-2">
+                        {['0.0 - 2.0', '2.0 - 3.0', '3.0 - 4.0'].map((gpa) => (
+                            <label key={gpa} className="flex items-center gap-2 text-gray-600">
+                                <input
+                                    type="radio"
+                                    value={gpa}
+                                    checked={filters.gpa === gpa}
+                                    onChange={(e) => onFilterChange('gpa', e.target.value)}
+                                    className="w-4 h-4"
+                                />
+                                {gpa}
+                            </label>
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={onClearFilters}
+                        className="mt-6 w-full bg-blue-50 text-blue-500 py-2 rounded-md hover:border hover:border-blue-500 transition"
+                    >
+                        Clear Filters
+                    </button>
                 </div>
-            )}
+            </div>
         </>
     );
 };

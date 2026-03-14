@@ -1,11 +1,16 @@
 import Header from "../../components/commons/Header.jsx";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { assets } from "../../assets/assets.js";
 import SearchBar from "../../components/list/SearchBar.jsx";
 import SideBar from "../../components/list/SideBar.jsx";
 import CardList from "../../components/list/CardList.jsx";
 import Pagination from "../../components/list/Pagination.jsx";
 import Footer from "../../components/commons/Footer.jsx";
+import { listConfig } from "../../config/listConfig.js";
+import { searchConfig } from "../../config/searchConfig.js";
+import { filtersConfig } from "../../config/filtersConfig.js";
+import { cardConfig } from "../../config/cardConfig.js";
 
 const mockStudents = [
     { id: 1, ownerId: 101, firstName: "John", lastName: "Doe", degree: "BACHELOR", gpa: 3.5 },
@@ -53,6 +58,13 @@ const ListPage = () => {
     };
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    const { type } = useParams();
+
+    const listCon = listConfig[type];
+    const searchCon = searchConfig[type];
+    const filtersCon = filtersConfig[type];
+    const cardCon = cardConfig[type];
 
     // const userId = getIdFromToken();
     // const userRole = getRoleFromToken();
@@ -193,12 +205,14 @@ const ListPage = () => {
             <Header />
 
             {/* Search Section */}
-            <div className="bg-gray-100 mt-20 py-8 px-4">
+            <div className="bg-gray-100 mt-20 py-8 px-6">
                 <div className="max-w-7xl mx-auto">
-                    <h1 className="text-2xl font-medium mb-6">Candidates</h1>
+                    <h1 className="text-2xl font-medium mb-6">{listCon.title}</h1>
 
                     <SearchBar
                         filters={searchFilters}
+                        fields={searchCon.fields}
+                        placeholder={searchCon.placeholder}
                         onFilterChange={(name, value) =>
                             setSearchFilters(prev => ({ ...prev, [name]: value }))
                         }
@@ -209,15 +223,16 @@ const ListPage = () => {
             </div>
 
             {/* Main Section */}
-            <div className="px-4 py-8">
+            <div className="px-6 py-8">
                 <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
 
                     <SideBar
                         filters={filters}
+                        filterConfig={filtersCon}
                         onFilterChange={(name, value) =>
                             setFilters(prev => ({ ...prev, [name]: value }))
                         }
-                        onClearFilters={() => setFilters({ degree: '', gpa: '' })}
+                        onClearFilters={() => setFilters({})}
                         isOpen={isSidebarOpen}
                         onClose={() => setIsSidebarOpen(false)}
                     />
@@ -225,7 +240,7 @@ const ListPage = () => {
 
                     <CardList
                         students={students}
-                        icon={assets.candidate_icon}
+                        icon={assets[cardCon.icon]}
                         toggleFavorite={toggleFavorite}
                         isFavorite={(id) => favorites.includes(id)}
                     />
