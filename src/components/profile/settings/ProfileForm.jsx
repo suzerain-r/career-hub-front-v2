@@ -11,6 +11,7 @@ export default function ProfileForm({
     isEditing,
     photoFile,
     setPhotoFile,
+    avatarUrl,
     onSave,
 }) {
     return (
@@ -22,7 +23,7 @@ export default function ProfileForm({
                     <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
                         {section.withPhoto && (
                             <div className="lg:col-span-4">
-                                <UploadBox file={photoFile} onFile={setPhotoFile} />
+                                <UploadBox file={photoFile} onFile={setPhotoFile} avatarUrl={avatarUrl} />
                             </div>
                         )}
 
@@ -54,7 +55,7 @@ export default function ProfileForm({
                                     if (f.type === "textarea") {
                                         return (
                                             <div key={f.name} className={span}>
-                                                <TextAreaField {...common} disabled={!isEditing || f.readOnly} />
+                                                <TextAreaField {...common} disabled={!isEditing || f.readOnly}/>
                                             </div>
                                         );
                                     }
@@ -80,7 +81,7 @@ export default function ProfileForm({
                                 <button
                                     type="button"
                                     onClick={onSave}
-                                    className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-8 py-4 text-base font-semibold text-white hover:bg-blue-700 active:bg-blue-800 sm:w-60"
+                                    className="inline-flex w-full items-center justify-center rounded-xl bg-[#0A65CC] px-8 py-4 text-base font-semibold text-white hover:bg-[#0957b0] active:bg-[#074a96] sm:w-60"
                                 >
                                     Save Changes
                                 </button>

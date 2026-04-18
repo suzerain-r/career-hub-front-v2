@@ -205,7 +205,7 @@ const ListPage = () => {
             <Header />
 
             {/* Search Section */}
-            <div className="bg-gray-100 mt-20 py-8 px-6">
+            <div className="bg-gray-100 mt-28 py-8 px-6">
                 <div className="max-w-7xl mx-auto">
                     <h1 className="text-2xl font-medium mb-6">{listCon.title}</h1>
 
