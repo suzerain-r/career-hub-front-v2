@@ -1,8 +1,16 @@
 
+import { useNavigate } from "react-router-dom";
 import { assets } from "../../assets/assets.js";
 
+// "students" | "universities" | "companies" -> "student" | "university" | "company"
+const LIST_TYPE_TO_ROLE = {
+    students: "student",
+    universities: "university",
+    companies: "company",
+};
 
-const CardList = ({ list, icon, title, fields }) => {
+const CardList = ({ list, icon, title, fields, avatars = {}, listType }) => {
+    const navigate = useNavigate();
 
     const getTitle = (item, titleFields) => {
         return titleFields
@@ -11,18 +19,37 @@ const CardList = ({ list, icon, title, fields }) => {
             .join(" ");
     };
 
+    const getPhotoId = (item) => item.ownerId ?? item.id;
+
+    const handleViewProfile = (item) => {
+        const role = LIST_TYPE_TO_ROLE[listType];
+        const id = item.ownerId ?? item.id;
+        if (!role || !id) return;
+        navigate(`/profile/${role}/${id}`);
+    };
+
     return (
         <div className="w-full lg:w-3/4 flex flex-col gap-4">
-            {list.map((user) => (
+            {list.map((user) => {
+                const avatarUrl = avatars[getPhotoId(user)];
+                return (
                 <div
                     key={user.id}
                     className="flex flex-row gap-3 p-3 sm:p-6 bg-white border border-gray-200 rounded-xl hover:border-blue-500 transition"
                 >
-                    <img
-                        src={icon}
-                        alt=""
-                        className="w-18 h-18 sm:w-20 sm:h-20 object-contain"
-                    />
+                    {avatarUrl ? (
+                        <img
+                            src={avatarUrl}
+                            alt=""
+                            className="w-18 h-18 sm:w-20 sm:h-20 rounded-full object-cover"
+                        />
+                    ) : (
+                        <img
+                            src={icon}
+                            alt=""
+                            className="w-18 h-18 sm:w-20 sm:h-20 object-contain"
+                        />
+                    )}
 
                     <div className="flex justify-between items-center sm:items-center w-full gap-3">
 
@@ -54,18 +81,25 @@ const CardList = ({ list, icon, title, fields }) => {
                                 />
                             </button> */}
 
-                            <button className="lg:hidden bg-blue-50 text-blue-500 px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white transition">
+                            <button
+                                onClick={() => handleViewProfile(user)}
+                                className="lg:hidden bg-blue-50 text-blue-500 px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white transition"
+                            >
                                 →
                             </button>
 
-                            <button className="hidden lg:inline-block bg-blue-50 text-blue-500 px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white transition">
+                            <button
+                                onClick={() => handleViewProfile(user)}
+                                className="hidden lg:inline-block bg-blue-50 text-blue-500 px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white transition"
+                            >
                                 View Profile →
                             </button>
                         </div>
 
                     </div>
                 </div>
-            ))}
+                );
+            })}
         </div>
     );
 };

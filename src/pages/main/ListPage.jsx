@@ -12,7 +12,7 @@ import { searchConfig } from "../../config/searchConfig.js";
 import { filtersConfig } from "../../config/filtersConfig.js";
 import { cardConfig } from "../../config/cardConfig.js";
 import { getIdFromToken, getRoleFromToken } from "../../utils/jwtDecode.js";
-import { fetchStudents, fetchUniversities, fetchCompanies } from "../../services/apiService.js";
+import { fetchStudents, fetchUniversities, fetchCompanies, fetchProfilePhotoUrl } from "../../services/apiService.js";
 
 const ListPage = () => {
 
@@ -28,6 +28,7 @@ const ListPage = () => {
     const cardCon = cardConfig[type];
 
     const [list, setList] = useState([]);
+    const [avatars, setAvatars] = useState({});
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [pageSize] = useState(3);
@@ -74,6 +75,45 @@ const ListPage = () => {
             setTotalPages(data.totalPages);
         });
     }, [filters, searchFilters, currentPage, type]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        // revoke старые blob-ссылки, чтобы не текли
+        Object.values(avatars).forEach((url) => {
+            if (url) URL.revokeObjectURL(url);
+        });
+
+        if (!Array.isArray(list) || list.length === 0) {
+            setAvatars({});
+            return;
+        }
+
+        const loadAvatars = async () => {
+            const pairs = await Promise.all(
+                list.map((u) => {
+                    const id = u.ownerId ?? u.id;
+                    if (!id) return [null, null];
+                    return fetchProfilePhotoUrl(id)
+                        .then((url) => [id, url])
+                        .catch(() => [id, null]);
+                })
+            );
+            if (cancelled) return;
+            const map = {};
+            pairs.forEach(([id, url]) => {
+                if (id && url) map[id] = url;
+            });
+            setAvatars(map);
+        };
+
+        loadAvatars();
+
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [list]);
 
     const handleFilterChange = (name, value) => {
         setFilters((prevFilters) => ({
@@ -162,6 +202,8 @@ const ListPage = () => {
                         icon={assets[cardCon.icon]}
                         title={cardCon.title}
                         fields={cardCon.fields}
+                        avatars={avatars}
+                        listType={type}
                     // toggleFavorite={toggleFavorite}
                     // isFavorite={(id) => favorites.includes(id)}
                     />

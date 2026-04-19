@@ -27,24 +27,13 @@ const App = () => {
                 }
             />
             <Route
-                path="/student-profile"
+                path="/profile/:viewRole/:viewId"
                 element={
-                    <ProtectedRoute allowedRoles={["STUDENT"]}>
+                    <ProtectedRoute>
                         <ProfilePage />
                     </ProtectedRoute>
                 }
             />
-            <Route
-                path="/university-profile"
-                element={
-                    <ProtectedRoute allowedRoles={["UNIVERSITY"]}>
-                        <ProfilePage />
-                    </ProtectedRoute>
-                }
-            />
-            {/* <Route path="/student-profile" element={<StudentProfile />} /> */}
-            {/* <Route path="/university-profile" element={<UniversityProfile/>}/> */}
-            {/* <Route path="/company-profile" element={<CompanyProfile/>}/> */}
         </Routes>
     )
 }

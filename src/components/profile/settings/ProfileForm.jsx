@@ -13,6 +13,7 @@ export default function ProfileForm({
     setPhotoFile,
     avatarUrl,
     onSave,
+    readOnly = false,
 }) {
     return (
         <div className="space-y-12">
@@ -23,7 +24,12 @@ export default function ProfileForm({
                     <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
                         {section.withPhoto && (
                             <div className="lg:col-span-4">
-                                <UploadBox file={photoFile} onFile={setPhotoFile} avatarUrl={avatarUrl} />
+                                <UploadBox
+                                    file={photoFile}
+                                    onFile={setPhotoFile}
+                                    avatarUrl={avatarUrl}
+                                    readOnly={readOnly}
+                                />
                             </div>
                         )}
 
@@ -76,16 +82,18 @@ export default function ProfileForm({
                                 })}
                             </div>
 
-                            {/* Save button */}
-                            <div className="mt-8">
-                                <button
-                                    type="button"
-                                    onClick={onSave}
-                                    className="inline-flex w-full items-center justify-center rounded-xl bg-[#0A65CC] px-8 py-4 text-base font-semibold text-white hover:bg-[#0957b0] active:bg-[#074a96] sm:w-60"
-                                >
-                                    Save Changes
-                                </button>
-                            </div>
+                            {/* Save button — только в режиме редактирования и не в view-only */}
+                            {!readOnly && (
+                                <div className="mt-8">
+                                    <button
+                                        type="button"
+                                        onClick={onSave}
+                                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#0A65CC] px-8 py-4 text-base font-semibold text-white hover:bg-[#0957b0] active:bg-[#074a96] sm:w-60"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

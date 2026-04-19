@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getIdFromToken, getRoleFromToken } from "../../utils/jwtDecode.js";
 import SettingsLayout from "../../components/profile/settings/SettingsLayout.jsx";
 import ProfileForm from "../../components/profile/settings/ProfileForm.jsx";
 import MyStudentsSection from "../../components/profile/settings/MyStudentsSection.jsx";
 import ResumeSection from "../../components/profile/settings/ResumeSection.jsx";
+import SavedStudentsSection from "../../components/profile/settings/SavedStudentsSection.jsx";
 import { profileConfigs } from "../../config/profileConfig.js";
 import { loadProfile, saveProfile } from "../../services/profileService.js";
 import { uploadProfilePhoto, fetchProfilePhotoUrl } from "../../services/apiService.js";
@@ -12,13 +13,40 @@ import { logout } from "../../services/authService.js";
 import Header from "../../components/commons/Header.jsx";
 import Footer from "../../components/commons/Footer.jsx";
 
+// student|university|company (URL) -> STUDENT|UNIVERSITY|COMPANY (internal)
+const ROLE_URL_TO_ENUM = {
+    student: "STUDENT",
+    university: "UNIVERSITY",
+    company: "COMPANY",
+};
 
 export default function ProfilePage() {
     const navigate = useNavigate();
-    const userId = getIdFromToken();
-    const role = getRoleFromToken(); // STUDENT | UNIVERSITY | COMPANY
+    const { viewRole: viewRoleParam, viewId: viewIdParam } = useParams();
 
-    const config = useMemo(() => profileConfigs[role], [role]);
+    const viewRole = viewRoleParam ? ROLE_URL_TO_ENUM[viewRoleParam.toLowerCase()] : null;
+    const viewId = viewIdParam ? Number(viewIdParam) || viewIdParam : null;
+
+    const selfId = getIdFromToken();
+    const selfRole = getRoleFromToken();
+
+    // Режим "чужой профиль" — только когда оба параметра есть и id != selfId
+    const isViewOnly = Boolean(viewRole && viewId && String(viewId) !== String(selfId));
+
+    const role = isViewOnly ? viewRole : selfRole;
+    const userId = isViewOnly ? viewId : selfId;
+
+    const baseConfig = useMemo(() => profileConfigs[role], [role]);
+
+    // В режиме viewOnly обрезаем вкладки до personal
+    const config = useMemo(() => {
+        if (!baseConfig) return null;
+        if (!isViewOnly) return baseConfig;
+        return {
+            ...baseConfig,
+            tabs: baseConfig.tabs.filter((t) => t.key === "personal"),
+        };
+    }, [baseConfig, isViewOnly]);
 
     const [activeTab, setActiveTab] = useState("personal");
     const [isEditing, setIsEditing] = useState(false);
@@ -30,6 +58,14 @@ export default function ProfilePage() {
     const [savedValues, setSavedValues] = useState({});
 
     useEffect(() => {
+        // при смене просмотра — возвращаем на personal и гасим редактирование
+        setActiveTab("personal");
+        setIsEditing(false);
+        setAvatarUrl((prev) => {
+            if (prev) URL.revokeObjectURL(prev);
+            return null;
+        });
+
         (async () => {
             const res = await loadProfile(role, userId);
             setValues(res.data);
@@ -93,47 +129,54 @@ export default function ProfilePage() {
     if (!config) return <div className="p-6">Unknown role</div>;
 
     const renderContent = () => {
-        if (activeTab === "students" && role === "UNIVERSITY") {
+        if (!isViewOnly && activeTab === "students" && role === "UNIVERSITY") {
             return <MyStudentsSection />;
         }
 
-        if (activeTab === "resume" && role === "STUDENT") {
+        if (!isViewOnly && activeTab === "resume" && role === "STUDENT") {
             return <ResumeSection />;
+        }
+
+        if (!isViewOnly && activeTab === "favorites" && role === "COMPANY") {
+            return <SavedStudentsSection />;
         }
 
         // personal tab (default)
         return (
             <>
-                {/* Edit / Cancel button */}
-                <div className="mb-6 flex justify-end">
-                    {isEditing ? (
-                        <button
-                            type="button"
-                            onClick={handleCancel}
-                            className="inline-flex items-center gap-2 rounded-xl border border-gray-300 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100"
-                        >
-                            Cancel
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={handleEdit}
-                            className="inline-flex items-center gap-2 rounded-xl border border-blue-600 px-6 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 active:bg-blue-100"
-                        >
-                            ✏️ Edit
-                        </button>
-                    )}
-                </div>
+                {/* Edit / Cancel button — только для своего профиля */}
+                {!isViewOnly && (
+                    <div className="mb-6 flex justify-end">
+                        {isEditing ? (
+                            <button
+                                type="button"
+                                onClick={handleCancel}
+                                className="inline-flex items-center gap-2 rounded-xl border border-gray-300 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100"
+                            >
+                                Cancel
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handleEdit}
+                                className="inline-flex items-center gap-2 rounded-xl border border-blue-600 px-6 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 active:bg-blue-100"
+                            >
+                                ✏️ Edit
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 <ProfileForm
                     config={config}
                     values={values}
                     onChange={handleChange}
-                    isEditing={isEditing}
+                    isEditing={isEditing && !isViewOnly}
                     photoFile={photoFile}
                     setPhotoFile={handlePhotoFile}
                     avatarUrl={avatarUrl}
                     onSave={handleSave}
+                    readOnly={isViewOnly}
                 />
             </>
         );
@@ -143,11 +186,11 @@ export default function ProfilePage() {
         <>
             <Header />
             <SettingsLayout
-                pageTitle={config.pageTitle}
+                pageTitle={isViewOnly ? "Profile" : config.pageTitle}
                 tabs={config.tabs}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
-                onLogout={handleLogout}
+                onLogout={isViewOnly ? null : handleLogout}
             >
                 {renderContent()}
             </SettingsLayout>

@@ -1,9 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { indexResume } from "../../../services/apiService.js";
 import { getIdFromToken } from "../../../utils/jwtDecode.js";
 
 function TagInput({ label, placeholder, values, onChange }) {
     const [input, setInput] = useState("");
+    const [editingIndex, setEditingIndex] = useState(-1);
+    const [editingValue, setEditingValue] = useState("");
+    const editingRef = useRef(null);
+
+    useEffect(() => {
+        if (editingIndex !== -1 && editingRef.current) {
+            editingRef.current.focus();
+            editingRef.current.select();
+        }
+    }, [editingIndex]);
 
     const addTag = () => {
         const v = input.trim();
@@ -16,8 +27,38 @@ function TagInput({ label, placeholder, values, onChange }) {
         setInput("");
     };
 
-    const removeTag = (tag) => {
-        onChange(values.filter((t) => t !== tag));
+    const removeTag = (index) => {
+        onChange(values.filter((_, i) => i !== index));
+    };
+
+    const startEdit = (index) => {
+        setEditingIndex(index);
+        setEditingValue(values[index]);
+    };
+
+    const cancelEdit = () => {
+        setEditingIndex(-1);
+        setEditingValue("");
+    };
+
+    const commitEdit = () => {
+        if (editingIndex === -1) return;
+        const v = editingValue.trim();
+        if (!v) {
+            // пустая правка = удаляем
+            removeTag(editingIndex);
+            cancelEdit();
+            return;
+        }
+        const duplicate = values.some((t, i) => i !== editingIndex && t === v);
+        if (duplicate) {
+            cancelEdit();
+            return;
+        }
+        const next = [...values];
+        next[editingIndex] = v;
+        onChange(next);
+        cancelEdit();
     };
 
     const handleKeyDown = (e) => {
@@ -29,26 +70,70 @@ function TagInput({ label, placeholder, values, onChange }) {
         }
     };
 
+    const handleEditKeyDown = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            commitEdit();
+        } else if (e.key === "Escape") {
+            e.preventDefault();
+            cancelEdit();
+        }
+    };
+
     return (
         <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">{label}</label>
 
             <div className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100">
-                {values.map((tag) => (
-                    <span
-                        key={tag}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700"
-                    >
-                        {tag}
-                        <button
-                            type="button"
-                            onClick={() => removeTag(tag)}
-                            className="text-blue-500 hover:text-blue-800"
-                            aria-label={`Remove ${tag}`}
+                {values.map((tag, i) => (
+                    editingIndex === i ? (
+                        <span
+                            key={`edit-${i}`}
+                            className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-sm font-medium text-blue-700 ring-2 ring-blue-300"
                         >
-                            ×
-                        </button>
-                    </span>
+                            <input
+                                ref={editingRef}
+                                type="text"
+                                value={editingValue}
+                                onChange={(e) => setEditingValue(e.target.value)}
+                                onKeyDown={handleEditKeyDown}
+                                onBlur={commitEdit}
+                                style={{ width: `${Math.max(editingValue.length, 4)}ch` }}
+                                className="max-w-full bg-transparent outline-none"
+                            />
+                        </span>
+                    ) : (
+                        <span
+                            key={`tag-${i}-${tag}`}
+                            className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700"
+                        >
+                            <button
+                                type="button"
+                                onClick={() => startEdit(i)}
+                                className="max-w-[420px] truncate text-left hover:underline"
+                                title="Click to edit"
+                            >
+                                {tag}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => startEdit(i)}
+                                className="text-blue-500 hover:text-blue-800"
+                                aria-label={`Edit ${tag}`}
+                                title="Edit"
+                            >
+                                <PencilSquareIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => removeTag(i)}
+                                className="text-blue-500 hover:text-blue-800"
+                                aria-label={`Remove ${tag}`}
+                            >
+                                ×
+                            </button>
+                        </span>
+                    )
                 ))}
 
                 <input
@@ -63,7 +148,7 @@ function TagInput({ label, placeholder, values, onChange }) {
             </div>
 
             <p className="mt-1.5 text-xs text-gray-500">
-                Press Enter or comma to add. Backspace removes the last one.
+                Press Enter or comma to add. Click on a tag to edit. Backspace removes the last one.
             </p>
         </div>
     );

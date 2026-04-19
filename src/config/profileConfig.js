@@ -105,6 +105,7 @@ export const profileConfigs = {
         pageTitle: "Settings",
         tabs: [
             { key: "personal", label: "Personal" },
+            { key: "favorites", label: "Saved Candidates" },
         ],
         sections: [
             {
