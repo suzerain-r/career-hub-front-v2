@@ -1,6 +1,6 @@
 export const searchConfig = {
     students: {
-        placeholder: "Search",
+        placeholder: "Search student",
         fields: []
     },
 
@@ -25,4 +25,42 @@ export const searchConfig = {
             }
         ]
     }
+};
+
+export const searchRules = {
+    STUDENT: {
+        students: {
+            key: "firstName",
+        },
+        universities: {
+            key: "name",
+        },
+        companies: {
+            key: "name",
+        },
+    },
+
+    UNIVERSITY: {
+        students: {
+            key: "firstName",
+        },
+        universities: {
+            key: "name",
+        },
+        companies: {
+            key: "name",
+        },
+    },
+
+    COMPANY: {
+        students: {
+            key: "searchQuery",
+        },
+        universities: {
+            key: "name",
+        },
+        companies: {
+            key: "name",
+        },
+    },
 };

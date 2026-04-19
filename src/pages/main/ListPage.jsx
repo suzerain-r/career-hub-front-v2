@@ -1,5 +1,5 @@
 import Header from "../../components/commons/Header.jsx";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { assets } from "../../assets/assets.js";
 import SearchBar from "../../components/list/SearchBar.jsx";
@@ -8,19 +8,18 @@ import CardList from "../../components/list/CardList.jsx";
 import Pagination from "../../components/list/Pagination.jsx";
 import Footer from "../../components/commons/Footer.jsx";
 import { listConfig } from "../../config/listConfig.js";
-import { searchConfig } from "../../config/searchConfig.js";
+import { searchConfig, searchRules } from "../../config/searchConfig.js";
 import { filtersConfig } from "../../config/filtersConfig.js";
 import { cardConfig } from "../../config/cardConfig.js";
 import { getIdFromToken, getRoleFromToken } from "../../utils/jwtDecode.js";
 import { fetchStudents, fetchUniversities, fetchCompanies, fetchProfilePhotoUrl } from "../../services/apiService.js";
 
 const ListPage = () => {
-
-
     const { type } = useParams();
 
     const userId = getIdFromToken();
     const userRole = getRoleFromToken();
+    const pageType = type?.toLowerCase();
 
     const listCon = listConfig[type];
     const searchCon = searchConfig[type];
@@ -44,32 +43,46 @@ const ListPage = () => {
 
     const fetchData = fetchMap[type];
 
-    const queryParams = {
-        page: currentPage - 1,
-        size: pageSize,
-    };
+    const rule = searchRules?.[userRole]?.[pageType];
 
-    Object.entries(filters).forEach(([key, value]) => {
-        if (!value) return;
+    const query = useMemo(() => {
+        const params = {
+            page: currentPage - 1,
+            size: pageSize,
+        };
 
-        if (key === "gpa") {
-            const [min, max] = value.split(" - ").map(Number);
-            queryParams.minGpa = min;
-            queryParams.maxGpa = max;
-        } else {
-            queryParams[key] = value;
+        Object.entries(filters).forEach(([key, value]) => {
+            if (!value) return;
+
+            if (key === "gpa") {
+                const [min, max] = value.split(" - ").map(Number);
+                params.minGpa = min;
+                params.maxGpa = max;
+            } else {
+                params[key] = value;
+            }
+        });
+
+        Object.entries(searchFilters).forEach(([key, value]) => {
+            if (!value) return;
+
+            if (key === "search" && rule?.key) {
+                params[rule.key] = value;
+            } else {
+                params[key] = value;
+            }
+        });
+
+        if (userRole === "COMPANY" && pageType === "students" && userId && searchFilters.search) {
+            params.companyId = userId;
         }
-    });
 
-    Object.entries(searchFilters).forEach(([key, value]) => {
-        if (value) {
-            queryParams[key] = value;
-        }
-    });
-
-    const query = new URLSearchParams(queryParams).toString();
+        return new URLSearchParams(params).toString();
+    }, [filters, searchFilters, currentPage, userRole, pageType, userId, rule]);
 
     useEffect(() => {
+        if (!fetchData) return;
+
         fetchData(query).then(data => {
             setList(data.content);
             setTotalPages(data.totalPages);
@@ -178,7 +191,6 @@ const ListPage = () => {
                         }
                         onOpenFilters={() => setIsSidebarOpen(true)}
                     />
-
                 </div>
             </div>
 
@@ -195,7 +207,6 @@ const ListPage = () => {
                         isOpen={isSidebarOpen}
                         onClose={() => setIsSidebarOpen(false)}
                     />
-
 
                     <CardList
                         list={list}
@@ -217,32 +228,6 @@ const ListPage = () => {
             />
 
             <Footer />
-
-
-            {/* {selectedStudent && (
-                <CandidateModal
-                    student={selectedStudent}
-                    university={university}
-                    closeModal={closeModal}
-                    reviews={reviews}
-                    onReviewSubmit={async () => {
-                        const response = await addReview(review);
-                        if (response?.ok) {
-                            const updatedReviews = await fetchReviews(selectedStudent.ownerId);
-                            const reviewSenders = await fetchSenders(updatedReviews['content']);
-                            setReviews(reviewSenders);
-                        } else {
-                            alert("Error saving review!");
-                        }
-                    }}
-                    role={userRole.toUpperCase()}
-                    review={review}
-                    setReview={setReview}
-                    handleReview={handleReview}
-                    fetchReviews={fetchReviews}
-                />
-
-            )} */}
         </div>
     );
 };

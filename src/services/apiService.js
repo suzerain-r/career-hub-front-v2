@@ -82,6 +82,7 @@ export default homeService;
 ////
 export const fetchStudents = async (query) => {
     const response = await authFetch(`${baseUrl}/student/search?${query}`);
+    console.log(query)
     return response.json();
 };
 

@@ -3,7 +3,8 @@ const SearchBar = ({
     fields,
     placeholder,
     onFilterChange,
-    onOpenFilters
+    onOpenFilters,
+    onSearch
 }) => {
     return (
         <div className="bg-white shadow-md rounded-lg flex flex-col sm:flex-row gap-4 p-4">
@@ -37,7 +38,6 @@ const SearchBar = ({
                         </select>
                     );
                 }
-
                 return null;
             })}
 
@@ -49,7 +49,10 @@ const SearchBar = ({
                     Filters
                 </button>
 
-                <button className="bg-[#0A65CC] text-white px-10 py-2 rounded-md">
+                <button
+                    onClick={onSearch}
+                    className="bg-[#0A65CC] text-white px-10 py-2 rounded-md cursor-pointer hover:bg-blue-500"
+                >
                     Find
                 </button>
             </div>
