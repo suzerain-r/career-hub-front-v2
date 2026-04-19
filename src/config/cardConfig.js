@@ -1,16 +1,27 @@
 export const cardConfig = {
     students: {
         icon: "candidate_icon",
-        fields: ["firstName", "lastName", "degree", "gpa"]
+        title: ["firstName", "lastName"],
+        fields: [
+            { key: "degree", label: "Degree" },
+            { key: "gpa", label: "GPA" }
+        ]
     },
 
     universities: {
         icon: "university_icon",
-        fields: ["name", "city"]
+        title: ["name"],
+        fields: [
+            { key: "location", label: "Location" }
+        ]
     },
 
     companies: {
         icon: "company_icon",
-        fields: ["name", "industry", "city"]
+        title: ["name"],
+        fields: [
+            { key: "industry", label: "Industry" },
+            { key: "location", label: "Location" }
+        ]
     }
 };

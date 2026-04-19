@@ -1,6 +1,6 @@
 export const searchConfig = {
     students: {
-        placeholder: "Search by first name",
+        placeholder: "Search",
         fields: []
     },
 

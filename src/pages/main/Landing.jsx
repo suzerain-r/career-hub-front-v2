@@ -40,17 +40,17 @@ const Landing = () => {
                 <div className='flex flex-wrap justify-center gap-8'>
                     <LandingCount
                         logo={assets.candidate_icon}
-                        count={"100+"}
+                        count={countStudents}
                         type={'Candidates'}
                     />
                     <LandingCount
                         logo={assets.university_icon}
-                        count={"100+"}
+                        count={countUniversities}
                         type={'Universities'}
                     />
                     <LandingCount
                         logo={assets.company_icon}
-                        count={"100+"}
+                        count={countCompanies}
                         type={'Companies'}
                     />
                 </div>
@@ -67,7 +67,7 @@ const Landing = () => {
                 />
             </picture>
             <LandingUniversityCardList />
-            <ContactUs />
+            {/* <ContactUs /> */}
             <Footer />
 
         </div>

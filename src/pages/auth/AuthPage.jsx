@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import AuthHeader from "../../components/auth/AuthHeader.jsx";
 import AuthFormWrapper from "../../components/auth/AuthFormWrapper.jsx";
 import PasswordInput from "../../components/auth/PasswordInput.jsx";
-import { AUTH_MODES, DEFAULT_MODE } from "../../config/authConfig.js";
+import { AUTH_MODES } from "../../config/authConfig.js";
 import { login, register } from "../../services/authService.js";
 import { getRoleFromToken } from "../../utils/jwtDecode.js";
 
@@ -11,7 +11,7 @@ const AuthPage = () => {
 
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
-    const mode = searchParams.get("mode") || DEFAULT_MODE;
+    const mode = searchParams.get("mode");
 
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
@@ -25,7 +25,7 @@ const AuthPage = () => {
 
     useEffect(() => {
         if (!Object.values(AUTH_MODES).includes(mode)) {
-            setSearchParams({ mode: DEFAULT_MODE });
+            setSearchParams({ mode: mode });
         }
     }, [mode, setSearchParams]);
 

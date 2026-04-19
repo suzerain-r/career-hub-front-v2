@@ -11,172 +11,102 @@ import { listConfig } from "../../config/listConfig.js";
 import { searchConfig } from "../../config/searchConfig.js";
 import { filtersConfig } from "../../config/filtersConfig.js";
 import { cardConfig } from "../../config/cardConfig.js";
-
-const mockStudents = [
-    { id: 1, ownerId: 101, firstName: "John", lastName: "Doe", degree: "BACHELOR", gpa: 3.5 },
-    { id: 2, ownerId: 102, firstName: "Anna", lastName: "Smith", degree: "MASTER", gpa: 3.8 },
-    { id: 3, ownerId: 103, firstName: "David", lastName: "Brown", degree: "DOCTORATE", gpa: 3.2 },
-    { id: 4, ownerId: 103, firstName: "David", lastName: "Brown", degree: "DOCTORATE", gpa: 3.2 },
-    { id: 5, ownerId: 103, firstName: "David", lastName: "Brown", degree: "DOCTORATE", gpa: 3.2 },
-];
+import { getIdFromToken, getRoleFromToken } from "../../utils/jwtDecode.js";
+import { fetchStudents, fetchUniversities, fetchCompanies } from "../../services/apiService.js";
 
 const ListPage = () => {
 
-    const [filters, setFilters] = useState({ degree: '', gpa: '' });
-    const [searchFilters, setSearchFilters] = useState({ firstName: '' });
-    const [students, setStudents] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [favorites, setFavorites] = useState([]);
-
-    useEffect(() => {
-        let filtered = [...mockStudents];
-
-        if (filters.degree) {
-            filtered = filtered.filter(s => s.degree === filters.degree);
-        }
-
-        if (filters.gpa) {
-            const [min, max] = filters.gpa.split(" - ").map(Number);
-            filtered = filtered.filter(s => s.gpa >= min && s.gpa <= max);
-        }
-
-        if (searchFilters.firstName) {
-            filtered = filtered.filter(s =>
-                s.firstName.toLowerCase().includes(searchFilters.firstName.toLowerCase())
-            );
-        }
-
-        setStudents(filtered);
-    }, [filters, searchFilters]);
-
-    const toggleFavorite = (id) => {
-        setFavorites(prev =>
-            prev.includes(id)
-                ? prev.filter(f => f !== id)
-                : [...prev, id]
-        );
-    };
-
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const { type } = useParams();
+
+    const userId = getIdFromToken();
+    const userRole = getRoleFromToken();
 
     const listCon = listConfig[type];
     const searchCon = searchConfig[type];
     const filtersCon = filtersConfig[type];
     const cardCon = cardConfig[type];
 
-    // const userId = getIdFromToken();
-    // const userRole = getRoleFromToken();
+    const [list, setList] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [pageSize] = useState(3);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [filters, setFilters] = useState({});
+    const [searchFilters, setSearchFilters] = useState({});
 
-    // const [filters, setFilters] = useState({
-    //     degree: '',
-    //     gpa: '',
-    // });
+    const fetchMap = {
+        students: fetchStudents,
+        universities: fetchUniversities,
+        companies: fetchCompanies,
+    };
 
-    // const [searchFilters, setSearchFilters] = useState({
-    //     firstName: '',
-    // });
+    const fetchData = fetchMap[type];
 
-    // const [students, setStudents] = useState([]);
-    // const [selectedStudent, setSelectedStudent] = useState(null);
-    // const [currentPage, setCurrentPage] = useState(1);
-    // const [totalPages, setTotalPages] = useState(1);
-    // const [pageSize] = useState(5);
-    // const [favorites, setFavorites] = useState([]);
-    // const [reviews, setReviews] = useState([]);
-    // const [university, setUniversity] = useState([])
-    // const [review, setReview] = useState({
-    //     recipientId: "",
-    //     senderId: userId,
-    //     reviewText: "",
-    //     rating: "",
-    //     recipientRole: "STUDENT",
-    // });
+    const queryParams = {
+        page: currentPage - 1,
+        size: pageSize,
+    };
 
+    Object.entries(filters).forEach(([key, value]) => {
+        if (!value) return;
 
+        if (key === "gpa") {
+            const [min, max] = value.split(" - ").map(Number);
+            queryParams.minGpa = min;
+            queryParams.maxGpa = max;
+        } else {
+            queryParams[key] = value;
+        }
+    });
 
-    // const queryParams = {
-    //     page: currentPage - 1,
-    //     size: pageSize,
-    // }
+    Object.entries(searchFilters).forEach(([key, value]) => {
+        if (value) {
+            queryParams[key] = value;
+        }
+    });
 
+    const query = new URLSearchParams(queryParams).toString();
 
-    // if (filters.degree) queryParams.degree = filters.degree;
+    useEffect(() => {
+        fetchData(query).then(data => {
+            setList(data.content);
+            setTotalPages(data.totalPages);
+        });
+    }, [filters, searchFilters, currentPage, type]);
 
-    // if (filters.gpa){
-    //     const [minGpa, maxGpa] = filters.gpa.split(' - ').map((value) => parseFloat(value));
-    //     queryParams.minGpa = minGpa;
-    //     queryParams.maxGpa = maxGpa;
-    // }
+    const handleFilterChange = (name, value) => {
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            [name]: value,
+        }));
+    };
 
-    // if(searchFilters.firstName){
-    //     queryParams.firstName = searchFilters.firstName;
-    // }
+    const handleSearchFilterChange = (filterName, value) => {
+        setSearchFilters((prevFilters) => ({
+            ...prevFilters,
+            [filterName]: value,
+        }));
+    };
 
+    const handleSearch = () => {
+        setCurrentPage(1);
+        fetchStudents(query).then(data => {
+            setList(data['content']);
+            setTotalPages(data['totalPages'])
+        });
+    };
 
-    // const query = new URLSearchParams(queryParams).toString();
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
 
-
-
-
-
-    // useEffect(() => {
-    //     fetchStudents(query).then(data => {
-    //         setStudents(data['content']);
-    //         setTotalPages(data['totalPages'])
-    //     });
-    // }, [filters, currentPage]);
-
-    // useEffect(() => {
-    //     {userRole === "COMPANY" && (
-    //         fetchFavorites(userId).then((data) => setFavorites(data))
-    //     )}
-    // }, []);
-
-    // const handleFilterChange = (name, value) => {
-    //     setFilters((prevFilters) => ({
-    //         ...prevFilters,
-    //         [name]: value,
-    //     }));
-    // };
-
-    // const handleSearchFilterChange = (filterName, value) => {
-    //     setSearchFilters((prevFilters) => ({
-    //         ...prevFilters,
-    //         [filterName]: value,
-    //     }));
-    // };
-
-    // const handleSearch = () => {
-    //     setCurrentPage(1);
-    //     fetchStudents(query).then(data => {
-    //         setStudents(data['content']);
-    //         setTotalPages(data['totalPages'])
-    //     });
-    // };
-
-    // const handlePageChange = (page) => {
-    //     if (page >= 1 && page <= totalPages) {
-    //         setCurrentPage(page);
-    //     }
-    // };
-
-    // const openModal = (student) => {
-    //     setSelectedStudent(student);
-
-    // };
-
-    // const closeModal = () => {
-    //     setSelectedStudent(null);
-    // };
-
-    // const handleClearFilters = () => {
-    //     setFilters({ type: '' });
-    //     setCurrentPage(1);
-    // };
-
-
+    const handleClearFilters = () => {
+        setFilters({ type: '' });
+        setCurrentPage(1);
+    };
 
     // const isFavorite = (id) => Array.isArray(favorites) && favorites.includes(id);
 
@@ -191,21 +121,11 @@ const ListPage = () => {
     //     }
     // };
 
-
-    // const handleReview = (e) => {
-    //     const { name, value } = e.target;
-    //     setReview((prevProfile) => ({
-    //         ...prevProfile,
-    //         [name]: value,
-    //     }));
-    // }
-
     return (
         <div className="min-h-screen">
             <Header />
 
-            {/* Search Section */}
-            <div className="bg-gray-100 mt-28 py-8 px-6">
+            <div className="bg-gray-100 mt-20 py-8 px-6">
                 <div className="max-w-7xl mx-auto">
                     <h1 className="text-2xl font-medium mb-6">{listCon.title}</h1>
 
@@ -222,7 +142,6 @@ const ListPage = () => {
                 </div>
             </div>
 
-            {/* Main Section */}
             <div className="px-6 py-8">
                 <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
 
@@ -239,17 +158,19 @@ const ListPage = () => {
 
 
                     <CardList
-                        students={students}
+                        list={list}
                         icon={assets[cardCon.icon]}
-                        toggleFavorite={toggleFavorite}
-                        isFavorite={(id) => favorites.includes(id)}
+                        title={cardCon.title}
+                        fields={cardCon.fields}
+                    // toggleFavorite={toggleFavorite}
+                    // isFavorite={(id) => favorites.includes(id)}
                     />
                 </div>
             </div>
 
             <Pagination
                 currentPage={currentPage}
-                totalPages={1}
+                totalPages={totalPages}
                 onPageChange={setCurrentPage}
             />
 

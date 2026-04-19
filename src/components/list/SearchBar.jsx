@@ -49,7 +49,7 @@ const SearchBar = ({
                     Filters
                 </button>
 
-                <button className="bg-blue-500 text-white px-10 py-2 rounded-md">
+                <button className="bg-[#0A65CC] text-white px-10 py-2 rounded-md">
                     Find
                 </button>
             </div>

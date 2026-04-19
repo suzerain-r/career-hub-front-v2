@@ -1,12 +1,21 @@
 
 import { assets } from "../../assets/assets.js";
 
-const CardList = ({ students, icon, toggleFavorite, isFavorite }) => {
+
+const CardList = ({ list, icon, title, fields }) => {
+
+    const getTitle = (item, titleFields) => {
+        return titleFields
+            .map((field) => item[field])
+            .filter(Boolean)
+            .join(" ");
+    };
+
     return (
         <div className="w-full lg:w-3/4 flex flex-col gap-4">
-            {students.map((student) => (
+            {list.map((user) => (
                 <div
-                    key={student.id}
+                    key={user.id}
                     className="flex flex-row gap-3 p-3 sm:p-6 bg-white border border-gray-200 rounded-xl hover:border-blue-500 transition"
                 >
                     <img
@@ -19,16 +28,18 @@ const CardList = ({ students, icon, toggleFavorite, isFavorite }) => {
 
                         <div className="flex flex-col">
                             <h3 className="font-medium text-base sm:text-lg">
-                                {student.firstName} {student.lastName}
+                                {getTitle(user, title)}
                             </h3>
-                            <p className="text-gray-500 text-sm">
-                                Degree: {student.degree}
-                            </p>
+                            {fields.map((field) => (
+                                <p className="text-gray-500 text-sm" key={field.key}>
+                                    {field.label}: {user[field.key]}
+                                </p>
+                            ))}
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => toggleFavorite(student.ownerId)}
+                            {/* <button
+                                onClick={() => toggleFavorite(user.ownerId)}
                                 className="hover:opacity-80"
                             >
                                 <img
@@ -41,7 +52,7 @@ const CardList = ({ students, icon, toggleFavorite, isFavorite }) => {
                                     alt=""
                                     className="w-6 h-6 sm:w-7 sm:h-7"
                                 />
-                            </button>
+                            </button> */}
 
                             <button className="lg:hidden bg-blue-50 text-blue-500 px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white transition">
                                 →

@@ -3,7 +3,7 @@ import { assets } from "../../assets/assets.js";
 
 const Hero = () => {
     return (
-        <div className="min-h-screen mb-4 bg-cover bg-center flex items-center w-full overflow-hidden">
+        <div className="min-h-screen mb-4 bg-cover bg-center flex items-center w-full overflow-hidden" style={{ backgroundImage: `url(/img_bg.jpg)` }}>
 
             <div className='container text-center mx-auto py-4 px6 md:px-20 lg:px-32 text-[#0A65CC]'>
                 <h2 className='text-5xl p-5 sm:text-6xl md:text-[82px] inline-block font-medium max-w-3xl pt-20'>

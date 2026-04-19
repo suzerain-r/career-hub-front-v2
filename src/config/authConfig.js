@@ -5,5 +5,3 @@ export const AUTH_MODES = {
     FORGOT: "forgot-password",
     RESET: "reset-password",
 };
-
-export const DEFAULT_MODE = AUTH_MODES.SIGNIN;
