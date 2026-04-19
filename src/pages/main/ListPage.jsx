@@ -131,7 +131,7 @@ const ListPage = () => {
 
     const handleSearch = () => {
         setCurrentPage(1);
-        fetchStudents(query).then(data => {
+        fetchData(query).then(data => {
             setList(data['content']);
             setTotalPages(data['totalPages'])
         });
