@@ -3,9 +3,7 @@ export const profileConfigs = {
         pageTitle: "Settings",
         tabs: [
             { key: "personal", label: "Personal" },
-            { key: "profile", label: "Profile" },
-            { key: "social", label: "Social Links" },
-            { key: "account", label: "Account Setting" },
+            { key: "resume", label: "Resume" },
         ],
         sections: [
             {
@@ -80,9 +78,7 @@ export const profileConfigs = {
         pageTitle: "Settings",
         tabs: [
             { key: "personal", label: "Personal" },
-            { key: "profile", label: "Profile" },
-            { key: "social", label: "Social Links" },
-            { key: "account", label: "Account Setting" },
+            { key: "students", label: "My Students" },
         ],
         sections: [
             {
@@ -109,9 +105,6 @@ export const profileConfigs = {
         pageTitle: "Settings",
         tabs: [
             { key: "personal", label: "Personal" },
-            { key: "profile", label: "Profile" },
-            { key: "social", label: "Social Links" },
-            { key: "account", label: "Account Setting" },
         ],
         sections: [
             {

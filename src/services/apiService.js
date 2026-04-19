@@ -2,52 +2,59 @@ import { getIdFromToken } from "../utils/jwtDecode.js";
 
 const baseUrl = "http://localhost:8080";
 
-const token = localStorage.getItem("authToken");
+const getToken = () => localStorage.getItem("authToken");
+
+const handleUnauthorized = () => {
+    localStorage.removeItem("authToken");
+    if (!window.location.pathname.startsWith("/auth")) {
+        window.location.href = "/auth";
+    }
+};
+
+export const authFetch = async (url, options = {}) => {
+    const token = getToken();
+    const headers = { ...(options.headers || {}) };
+
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
+    const isFormData = options.body instanceof FormData;
+    if (options.body && !isFormData && !headers["Content-Type"]) {
+        headers["Content-Type"] = "application/json";
+    }
+
+    const response = await fetch(url, { ...options, headers });
+
+    if (response.status === 401) {
+        handleUnauthorized();
+        throw new Error("Unauthorized");
+    }
+
+    return response;
+};
 
 const homeService = {
     getStudentsCount: async () => {
-        const response = await fetch(`${baseUrl}/student/search`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await authFetch(`${baseUrl}/student/search`);
         return response.json();
     },
 
     getCompaniesCount: async () => {
-        const response = await fetch(`${baseUrl}/company/search`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await authFetch(`${baseUrl}/company/search`);
         return response.json();
     },
 
     getUniversitiesCount: async () => {
-        const response = await fetch(`${baseUrl}/university/search`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await authFetch(`${baseUrl}/university/search`);
         return response.json();
     },
 
     getAverageRatingsForUniversities: async (universityList) => {
         try {
             const promises = universityList.map((university) =>
-                fetch(`${baseUrl}/review/getAverageRating/${university.ownerId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                }).then((response) => response.json().then((data) => ({ id: university.ownerId, averageRating: data?.averageRating || 0 })))
+                authFetch(`${baseUrl}/review/getAverageRating/${university.ownerId}`)
+                    .then((response) => response.json().then((data) => ({ id: university.ownerId, averageRating: data?.averageRating || 0 })))
             );
 
             const ratings = await Promise.all(promises);
@@ -74,36 +81,18 @@ export default homeService;
 
 ////
 export const fetchStudents = async (query) => {
-    const response = await fetch(`${baseUrl}/student/search?${query}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-    });
+    const response = await authFetch(`${baseUrl}/student/search?${query}`);
     return response.json();
 };
 
 export const fetchCompanies = async (query) => {
-    const response = await fetch(`${baseUrl}/company/search?${query}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-    });
+    const response = await authFetch(`${baseUrl}/company/search?${query}`);
     return response.json();
 
 };
 
 export const fetchUniversities = async (query) => {
-    const response = await fetch(`${baseUrl}/university/search?${query}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-    });
+    const response = await authFetch(`${baseUrl}/university/search?${query}`);
     return response.json();
 
 };
@@ -111,51 +100,28 @@ export const fetchUniversities = async (query) => {
 
 ////
 export const fetchFavorites = async (userId) => {
-    const response = await fetch(`${baseUrl}/company/favouriteStudent/${userId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-    });
+    const response = await authFetch(`${baseUrl}/company/favouriteStudent/${userId}`);
     return response.json();
 };
 
 
 export const togFavorite = async (userId, studentId, isFavorite) => {
-    await fetch(`${baseUrl}/company/favouriteStudent/${userId}?studentOwnerId=${studentId}`, {
+    await authFetch(`${baseUrl}/company/favouriteStudent/${userId}?studentOwnerId=${studentId}`, {
         method: isFavorite ? 'DELETE' : 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
     });
 };
 
 
 ////
 export const fetchReviews = async (id) => {
-    const response = await fetch(`${baseUrl}/review/getAll/${id}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-    });
-
+    const response = await authFetch(`${baseUrl}/review/getAll/${id}`);
     return response.json();
 };
 
 export const fetchSenders = async (reviewList) => {
     try {
         const promises = reviewList.map((review) =>
-            fetch(`${baseUrl}/${review.senderRole.toLowerCase()}/${review.senderId}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            })
+            authFetch(`${baseUrl}/${review.senderRole.toLowerCase()}/${review.senderId}`)
                 .then(response => response.json())
                 .then(data => ({
                     ...review,
@@ -170,12 +136,8 @@ export const fetchSenders = async (reviewList) => {
 }
 
 export const addReview = async (review) => {
-    return await fetch(`${baseUrl}/review/add`, {
+    return await authFetch(`${baseUrl}/review/add`, {
         method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify(review),
     });
 };
@@ -183,38 +145,17 @@ export const addReview = async (review) => {
 
 ////
 export const fetchUniversity = async (id) => {
-    const token = localStorage.getItem("authToken");
-
-    const response = await fetch(`${baseUrl}/university/${id}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        }
-    });
+    const response = await authFetch(`${baseUrl}/university/${id}`);
     return response.json();
 }
 
 export const fetchStudent = async (id) => {
-    const token = localStorage.getItem("authToken");
-    const response = await fetch(`${baseUrl}/student/${id}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        }
-    });
+    const response = await authFetch(`${baseUrl}/student/${id}`);
     return response.json();
 }
 
 export const fetchCompany = async (id) => {
-    const response = await fetch(`${baseUrl}/company/${id}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        }
-    });
+    const response = await authFetch(`${baseUrl}/company/${id}`);
     return response.json();
 }
 
@@ -222,12 +163,8 @@ export const fetchCompany = async (id) => {
 ////
 export const updateStudentProfile = async (profile) => {
     try {
-        const response = await fetch(`${baseUrl}/student/${getIdFromToken()}`, {
+        const response = await authFetch(`${baseUrl}/student/${getIdFromToken()}`, {
             method: "PUT",
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                "Content-Type": "application/json"
-            },
             body: JSON.stringify(profile),
         });
 
@@ -247,12 +184,8 @@ export const updateStudentProfile = async (profile) => {
 
 export const updateUniversityProfile = async (profile) => {
     try {
-        const response = await fetch(`${baseUrl}/university/update/${getIdFromToken()}`, {
+        const response = await authFetch(`${baseUrl}/university/update/${getIdFromToken()}`, {
             method: "PUT",
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                "Content-Type": "application/json"
-            },
             body: JSON.stringify(profile),
         });
 
@@ -271,12 +204,8 @@ export const updateUniversityProfile = async (profile) => {
 
 export const updateCompanyProfile = async (profile) => {
     try {
-        const response = await fetch(`${baseUrl}/company/update/${getIdFromToken()}`, {
+        const response = await authFetch(`${baseUrl}/company/update/${getIdFromToken()}`, {
             method: "PUT",
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                "Content-Type": "application/json"
-            },
             body: JSON.stringify(profile),
         });
 
@@ -296,13 +225,67 @@ export const updateCompanyProfile = async (profile) => {
 
 ////
 export const fetchStudentsOfUniversity = async () => {
-    const response = await fetch(`${baseUrl}/student/search?universityId=${getIdFromToken()}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        }
-    });
-
+    const response = await authFetch(`${baseUrl}/student/getByUniversityId/${getIdFromToken()}`);
     return response.json();
 }
+
+export const deleteStudent = async (userId) => {
+    try {
+        const response = await authFetch(`${baseUrl}/auth/student/delete/${userId}`, {
+            method: "DELETE",
+        });
+        return response.ok;
+    } catch (error) {
+        console.error("Error deleting student:", error);
+        return false;
+    }
+};
+
+////
+export const uploadProfilePhoto = async (userId, file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await authFetch(`${baseUrl}/auth/users/${userId}/profilePhoto`, {
+            method: "POST",
+            body: formData,
+        });
+        return response.ok;
+    } catch (error) {
+        console.error("Error uploading profile photo:", error);
+        return false;
+    }
+};
+
+////
+export const indexResume = async ({ studentId, skills, experience }) => {
+    try {
+        const response = await authFetch(`${baseUrl}/student/api/resumes`, {
+            method: "POST",
+            body: JSON.stringify({
+                studentId: String(studentId),
+                skills: skills || [],
+                experience: experience || [],
+            }),
+        });
+        return response.ok;
+    } catch (error) {
+        console.error("Error indexing resume:", error);
+        return false;
+    }
+};
+
+
+////
+export const fetchProfilePhotoUrl = async (userId) => {
+    try {
+        const response = await authFetch(`${baseUrl}/auth/users/${userId}/profilePhoto`);
+        if (!response.ok) return null;
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
+    } catch (error) {
+        console.error("Error fetching profile photo:", error);
+        return null;
+    }
+};

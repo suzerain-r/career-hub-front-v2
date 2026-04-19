@@ -1,6 +1,5 @@
 import { fetchStudent, fetchUniversity, updateStudentProfile } from "./apiService.js";
 
-// TODO: добавь свои методы (примерные имена)
 import { fetchCompany, updateUniversityProfile, updateCompanyProfile } from "./apiService.js";
 
 export async function loadProfile(role, userId) {

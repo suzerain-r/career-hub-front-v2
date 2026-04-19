@@ -1,7 +1,5 @@
 const baseUrl = "http://localhost:8080/auth";
 
-const token = localStorage.getItem("authToken");
-
 export const login = async (username, password) => {
     let url = `${baseUrl}/login`;
 
@@ -46,13 +44,18 @@ export const register = async (role, username, email, password) => {
             throw new Error('Unknown role');
     }
 
+    const token = localStorage.getItem("authToken");
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
     try {
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify({
                 role: role.toUpperCase(),
                 username,
@@ -72,4 +75,8 @@ export const register = async (role, username, email, password) => {
         console.error('Error during registration:', error);
         return { success: false, message: 'Something went wrong. Please try again.' };
     }
+};
+
+export const logout = () => {
+    localStorage.removeItem("authToken");
 };
