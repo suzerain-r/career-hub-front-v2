@@ -3,6 +3,10 @@ import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import SettingsTabs from "./SettingsTabs.jsx";
 
 export default function SettingsLayout({ pageTitle, tabs, activeTab, setActiveTab, onLogout, children }) {
+    // Logout показываем только на первом табе (personal)
+    const firstTabKey = tabs?.[0]?.key;
+    const showLogout = onLogout && activeTab === firstTabKey;
+
     return (
         <div className="min-h-screen bg-white">
             <div className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6">
@@ -13,7 +17,7 @@ export default function SettingsLayout({ pageTitle, tabs, activeTab, setActiveTa
             <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
                 {children}
 
-                {onLogout && (
+                {showLogout && (
                     <div className="mt-10 flex justify-end">
                         <button
                             type="button"

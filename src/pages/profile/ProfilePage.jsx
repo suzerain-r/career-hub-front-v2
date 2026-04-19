@@ -38,7 +38,6 @@ export default function ProfilePage() {
 
     const baseConfig = useMemo(() => profileConfigs[role], [role]);
 
-    // В режиме viewOnly обрезаем вкладки до personal
     const config = useMemo(() => {
         if (!baseConfig) return null;
         if (!isViewOnly) return baseConfig;
