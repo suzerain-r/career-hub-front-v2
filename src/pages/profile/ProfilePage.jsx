@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { getIdFromToken, getRoleFromToken } from "../../utils/jwtDecode.js";
 import SettingsLayout from "../../components/profile/settings/SettingsLayout.jsx";
 import ProfileForm from "../../components/profile/settings/ProfileForm.jsx";
@@ -7,11 +8,13 @@ import ResumeSection from "../../components/profile/settings/ResumeSection.jsx";
 import { profileConfigs } from "../../config/profileConfig.js";
 import { loadProfile, saveProfile } from "../../services/profileService.js";
 import { uploadProfilePhoto, fetchProfilePhotoUrl } from "../../services/apiService.js";
+import { logout } from "../../services/authService.js";
 import Header from "../../components/commons/Header.jsx";
 import Footer from "../../components/commons/Footer.jsx";
 
 
 export default function ProfilePage() {
+    const navigate = useNavigate();
     const userId = getIdFromToken();
     const role = getRoleFromToken(); // STUDENT | UNIVERSITY | COMPANY
 
@@ -20,14 +23,12 @@ export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("personal");
     const [isEditing, setIsEditing] = useState(false);
 
-    // Аватарка: локальный файл (только для превью) + blob URL с сервера
     const [photoFile, setPhotoFile] = useState(null);
     const [avatarUrl, setAvatarUrl] = useState(null);
 
     const [values, setValues] = useState({});
     const [savedValues, setSavedValues] = useState({});
 
-    // Загружаем профиль и аватарку при монтировании
     useEffect(() => {
         (async () => {
             const res = await loadProfile(role, userId);
@@ -64,6 +65,11 @@ export default function ProfilePage() {
         }
     };
 
+    const handleLogout = () => {
+        logout();
+        navigate("/auth?mode=sign-in");
+    };
+
     // Загрузка аватарки — сразу при выборе файла
     const handlePhotoFile = useCallback(async (file) => {
         if (!file) return;
@@ -71,16 +77,14 @@ export default function ProfilePage() {
 
         const success = await uploadProfilePhoto(userId, file);
         if (success) {
-            // Получаем свежий blob URL с сервера
             const url = await fetchProfilePhotoUrl(userId);
             if (url) {
-                // Освобождаем старый blob URL во избежание утечек памяти
                 setAvatarUrl((prev) => {
                     if (prev) URL.revokeObjectURL(prev);
                     return url;
                 });
             }
-            setPhotoFile(null); // сбрасываем локальный файл — теперь используем серверный url
+            setPhotoFile(null);
         } else {
             alert("Failed to upload photo. Please try again.");
         }
@@ -143,6 +147,7 @@ export default function ProfilePage() {
                 tabs={config.tabs}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
+                onLogout={handleLogout}
             >
                 {renderContent()}
             </SettingsLayout>

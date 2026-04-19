@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { assets } from "../../assets/assets.js";
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { getRoleFromToken } from "../../utils/jwtDecode.js";
+import { getIdFromToken, getRoleFromToken } from "../../utils/jwtDecode.js";
 import { UserCircleIcon } from '@heroicons/react/24/outline';
+import { fetchProfilePhotoUrl } from "../../services/apiService.js";
 
 const Header = () => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -25,11 +26,37 @@ const Header = () => {
     };
 
     const [isAuth, setIsAuth] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState(null);
 
     useEffect(() => {
         const role = getRoleFromToken();
         setIsAuth(!!role);
+
+        if (role) {
+            const userId = getIdFromToken();
+            if (userId) {
+                fetchProfilePhotoUrl(userId)
+                    .then((url) => { if (url) setAvatarUrl(url); })
+                    .catch((e) => console.error(e));
+            }
+        }
     }, []);
+
+    const AvatarButton = ({ className, onClick }) => (
+        avatarUrl ? (
+            <img
+                src={avatarUrl}
+                alt="avatar"
+                onClick={onClick}
+                className={`rounded-full object-cover border-2 border-[#0A65CC] cursor-pointer hover:scale-110 transition ${className}`}
+            />
+        ) : (
+            <UserCircleIcon
+                onClick={onClick}
+                className={`text-[#0A65CC] cursor-pointer hover:scale-110 transition ${className}`}
+            />
+        )
+    );
 
 
     const menuItems = [
@@ -75,23 +102,25 @@ const Header = () => {
                     ))}
                 </ul>
 
-                {
-                    isAuth ? (
-                        <UserCircleIcon
-                            onClick={() => navigate("/profile")}
-                            className="hidden md:block w-9 h-9 text-[#0A65CC] cursor-pointer hover:scale-110 transition"
-                        />
-                    ) : (
-                        <button
-                            className="hidden md:block bg-[#0A65CC] text-white px-6 py-2 rounded hover:bg-blue-400 cursor-pointer"
-                            onClick={handleSignIn}
-                        >
-                            Sign up
-                        </button>
-                    )
-                }
-                <img onClick={() => setShowMobileMenu(true)} src={assets.menu_icon}
-                    className='md:hidden w-7 cursor-pointer' alt='' />
+                <div className="flex items-center gap-3 ">
+                    {
+                        isAuth ? (
+                            <AvatarButton
+                                onClick={() => navigate("/profile")}
+                                className="w-15 h-15"
+                            />
+                        ) : (
+                            <button
+                                className="hidden md:block bg-[#0A65CC] text-white px-6 py-2 rounded hover:bg-blue-400 cursor-pointer"
+                                onClick={handleSignIn}
+                            >
+                                Sign up
+                            </button>
+                        )
+                    }
+                    <img onClick={() => setShowMobileMenu(true)} src={assets.menu_icon}
+                        className='md:hidden w-7 cursor-pointer' alt='' />
+                </div>
             </div>
 
             <div className={`fixed inset-0 z-50 md:hidden transition-opacity duration-300 ${showMobileMenu ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
@@ -109,13 +138,25 @@ const Header = () => {
                         />
                         {
                             isAuth && (
-                                <UserCircleIcon
-                                    onClick={() => {
-                                        navigate("/profile");
-                                        setShowMobileMenu(false);
-                                    }}
-                                    className="w-9 h-9 text-white cursor-pointer hover:scale-110 transition"
-                                />
+                                avatarUrl ? (
+                                    <img
+                                        src={avatarUrl}
+                                        alt="avatar"
+                                        onClick={() => {
+                                            navigate("/profile");
+                                            setShowMobileMenu(false);
+                                        }}
+                                        className="w-9 h-9 rounded-full object-cover border-2 border-white cursor-pointer hover:scale-110 transition"
+                                    />
+                                ) : (
+                                    <UserCircleIcon
+                                        onClick={() => {
+                                            navigate("/profile");
+                                            setShowMobileMenu(false);
+                                        }}
+                                        className="w-9 h-9 text-white cursor-pointer hover:scale-110 transition"
+                                    />
+                                )
                             )
                         }
                     </div>
