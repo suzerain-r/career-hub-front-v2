@@ -1,292 +1,210 @@
+import axios from "axios";
 import { getIdFromToken } from "../utils/jwtDecode.js";
 
-const baseUrl = "http://localhost:8080";
+const api = axios.create({
+    baseURL: "http://localhost:8080",
+});
 
-const getToken = () => localStorage.getItem("authToken");
-
-const handleUnauthorized = () => {
-    localStorage.removeItem("authToken");
-    if (!window.location.pathname.startsWith("/auth")) {
-        window.location.href = "/auth";
-    }
-};
-
-export const authFetch = async (url, options = {}) => {
-    const token = getToken();
-    const headers = { ...(options.headers || {}) };
-
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem("authToken");
     if (token) {
-        headers.Authorization = `Bearer ${token}`;
+        config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
+});
 
-    const isFormData = options.body instanceof FormData;
-    if (options.body && !isFormData && !headers["Content-Type"]) {
-        headers["Content-Type"] = "application/json";
+api.interceptors.response.use(
+    (res) => res,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem("authToken");
+            if (!window.location.pathname.startsWith("/auth")) {
+                window.location.href = "/auth?mode=sign-in";
+            }
+        }
+        return Promise.reject(error);
     }
+);
 
-    const response = await fetch(url, { ...options, headers });
+const unwrap = (res) => res.data;
 
-    if (response.status === 401) {
-        handleUnauthorized();
-        throw new Error("Unauthorized");
-    }
-
-    return response;
-};
-
+/* HOME */
 const homeService = {
-    getStudentsCount: async () => {
-        const response = await authFetch(`${baseUrl}/student/search`);
-        return response.json();
-    },
+    getStudentsCount: async () => unwrap(await api.get("/student/search")),
+    getCompaniesCount: async () => unwrap(await api.get("/company/search")),
+    getUniversitiesCount: async () => unwrap(await api.get("/university/search")),
 
-    getCompaniesCount: async () => {
-        const response = await authFetch(`${baseUrl}/company/search`);
-        return response.json();
-    },
-
-    getUniversitiesCount: async () => {
-        const response = await authFetch(`${baseUrl}/university/search`);
-        return response.json();
-    },
-
-    getAverageRatingsForUniversities: async (universityList) => {
+    getAverageRatingsForUniversities: async (list) => {
         try {
-            const promises = universityList.map((university) =>
-                authFetch(`${baseUrl}/review/getAverageRating/${university.ownerId}`)
-                    .then((response) => response.json().then((data) => ({ id: university.ownerId, averageRating: data?.averageRating || 0 })))
+            const ratings = await Promise.all(
+                list.map((u) =>
+                    api
+                        .get(`/review/getAverageRating/${u.ownerId}`)
+                        .then((r) => ({
+                            id: u.ownerId,
+                            averageRating: r.data?.averageRating || 0,
+                        }))
+                )
             );
 
-            const ratings = await Promise.all(promises);
-            const ratingsMap = ratings.reduce((map, rating) => {
-                map[rating.id] = rating.averageRating;
-                return map;
+            const map = ratings.reduce((acc, r) => {
+                acc[r.id] = r.averageRating;
+                return acc;
             }, {});
 
-            return universityList.map((university) => ({
-                ...university,
-                averageRating: ratingsMap[university.ownerId] || 0,
+            return list.map((u) => ({
+                ...u,
+                averageRating: map[u.ownerId] || 0,
             }));
-        } catch (error) {
-            console.error("Error fetching ratings:", error);
+        } catch (e) {
+            console.error(e);
+            return list;
         }
-    }
-
-
+    },
 };
 
 export default homeService;
 
+/* SEARCH */
+export const fetchStudents = async (query) =>
+    unwrap(await api.get(`/student/search?${query}`));
 
+export const fetchCompanies = async (query) =>
+    unwrap(await api.get(`/company/search?${query}`));
 
-////
-export const fetchStudents = async (query) => {
-    const response = await authFetch(`${baseUrl}/student/search?${query}`);
-    console.log(query)
-    return response.json();
-};
+export const fetchUniversities = async (query) =>
+    unwrap(await api.get(`/university/search?${query}`));
 
-export const fetchCompanies = async (query) => {
-    const response = await authFetch(`${baseUrl}/company/search?${query}`);
-    return response.json();
+/* FAVORITES */
+export const fetchFavorites = async (userId) =>
+    unwrap(await api.get(`/company/favouriteStudent/${userId}`));
 
-};
-
-export const fetchUniversities = async (query) => {
-    const response = await authFetch(`${baseUrl}/university/search?${query}`);
-    return response.json();
-
-};
-
-
-////
-export const fetchFavorites = async (userId) => {
-    const response = await authFetch(`${baseUrl}/company/favouriteStudent/${userId}`);
-    return response.json();
-};
-
-
-export const togFavorite = async (userId, studentId, isFavorite) => {
-    await authFetch(`${baseUrl}/company/favouriteStudent/${userId}?studentOwnerId=${studentId}`, {
-        method: isFavorite ? 'DELETE' : 'POST',
+export const togFavorite = async (userId, studentId, isFavorite) =>
+    await api({
+        url: `/company/favouriteStudent/${userId}`,
+        method: isFavorite ? "DELETE" : "POST",
+        params: { studentOwnerId: studentId },
     });
-};
 
+/* REVIEWS */
+export const fetchReviews = async (id) =>
+    unwrap(await api.get(`/review/getAll/${id}`));
 
-////
-export const fetchReviews = async (id) => {
-    const response = await authFetch(`${baseUrl}/review/getAll/${id}`);
-    return response.json();
-};
-
-export const fetchSenders = async (reviewList) => {
+export const fetchSenders = async (reviews) => {
     try {
-        const promises = reviewList.map((review) =>
-            authFetch(`${baseUrl}/${review.senderRole.toLowerCase()}/${review.senderId}`)
-                .then(response => response.json())
-                .then(data => ({
-                    ...review,
-                    senderName: data.name,
-                }))
+        return await Promise.all(
+            reviews.map(async (r) => {
+                const { data } = await api.get(
+                    `/${r.senderRole.toLowerCase()}/${r.senderId}`
+                );
+                return { ...r, senderName: data.name };
+            })
         );
-        return await Promise.all(promises);
+    } catch (e) {
+        console.error(e);
+        return [];
     }
-    catch (error) {
-        console.error("Error fetching sender information:", error);
-    }
-}
-
-export const addReview = async (review) => {
-    return await authFetch(`${baseUrl}/review/add`, {
-        method: 'POST',
-        body: JSON.stringify(review),
-    });
 };
 
+export const addReview = async (review) =>
+    unwrap(await api.post("/review/add", review));
 
-////
-export const fetchUniversity = async (id) => {
-    const response = await authFetch(`${baseUrl}/university/${id}`);
-    return response.json();
-}
+/* GET ONE */
+export const fetchUniversity = async (id) =>
+    unwrap(await api.get(`/university/${id}`));
 
-export const fetchStudent = async (id) => {
-    const response = await authFetch(`${baseUrl}/student/${id}`);
-    return response.json();
-}
+export const fetchStudent = async (id) =>
+    unwrap(await api.get(`/student/${id}`));
 
-export const fetchCompany = async (id) => {
-    const response = await authFetch(`${baseUrl}/company/${id}`);
-    return response.json();
-}
+export const fetchCompany = async (id) =>
+    unwrap(await api.get(`/company/${id}`));
 
-
-////
+/* UPDATE */
 export const updateStudentProfile = async (profile) => {
     try {
-        const response = await authFetch(`${baseUrl}/student/${getIdFromToken()}`, {
-            method: "PUT",
-            body: JSON.stringify(profile),
-        });
-
-
-        if (response.ok) {
-            return { success: true };
-        } else {
-            const errorData = await response.json();
-            return { success: false, message: errorData };
-        }
-    } catch (error) {
-        console.error("Error saving profile:", error);
-        return { success: false, message: error.message };
+        await api.put(`/student/${getIdFromToken()}`, profile);
+        return { success: true };
+    } catch (e) {
+        return {
+            success: false,
+            message: e.response?.data || "Error",
+        };
     }
 };
-
 
 export const updateUniversityProfile = async (profile) => {
     try {
-        const response = await authFetch(`${baseUrl}/university/update/${getIdFromToken()}`, {
-            method: "PUT",
-            body: JSON.stringify(profile),
-        });
-
-        if (response.ok) {
-            return { success: true };
-        } else {
-            const errorData = await response.json();
-            return { success: false, message: errorData };
-        }
-    } catch (error) {
-        console.error("Error saving university profile:", error);
-        return { success: false, message: "Network error" };
+        await api.put(`/university/update/${getIdFromToken()}`, profile);
+        return { success: true };
+    } catch (e) {
+        return {
+            success: false,
+            message: e.response?.data || "Error",
+        };
     }
 };
-
 
 export const updateCompanyProfile = async (profile) => {
     try {
-        const response = await authFetch(`${baseUrl}/company/update/${getIdFromToken()}`, {
-            method: "PUT",
-            body: JSON.stringify(profile),
-        });
-
-        if (response.ok) {
-            return { success: true };
-        } else {
-            const errorData = await response.json();
-            return { success: false, message: errorData };
-        }
-    } catch (error) {
-        console.error("Error saving company profile:", error);
-        return { success: false, message: "Network error" };
+        await api.put(`/company/update/${getIdFromToken()}`, profile);
+        return { success: true };
+    } catch (e) {
+        return {
+            success: false,
+            message: e.response?.data || "Error",
+        };
     }
 };
 
-
-
-////
-export const fetchStudentsOfUniversity = async () => {
-    const response = await authFetch(`${baseUrl}/student/getByUniversityId/${getIdFromToken()}`);
-    return response.json();
-}
+/* UNIVERSITY */
+export const fetchStudentsOfUniversity = async () =>
+    unwrap(await api.get(`/student/getByUniversityId/${getIdFromToken()}`));
 
 export const deleteStudent = async (userId) => {
     try {
-        const response = await authFetch(`${baseUrl}/auth/student/delete/${userId}`, {
-            method: "DELETE",
-        });
-        return response.ok;
-    } catch (error) {
-        console.error("Error deleting student:", error);
+        await api.delete(`/auth/student/delete/${userId}`);
+        return true;
+    } catch {
         return false;
     }
 };
 
-////
+/* FILE */
 export const uploadProfilePhoto = async (userId, file) => {
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-        const response = await authFetch(`${baseUrl}/auth/users/${userId}/profilePhoto`, {
-            method: "POST",
-            body: formData,
-        });
-        return response.ok;
-    } catch (error) {
-        console.error("Error uploading profile photo:", error);
+        await api.post(`/auth/users/${userId}/profilePhoto`, formData);
+        return true;
+    } catch {
         return false;
     }
 };
 
-////
+/* ELASTIC */
 export const indexResume = async ({ studentId, skills, experience }) => {
     try {
-        const response = await authFetch(`${baseUrl}/student/api/resumes`, {
-            method: "POST",
-            body: JSON.stringify({
-                studentId: String(studentId),
-                skills: skills || [],
-                experience: experience || [],
-            }),
+        await api.post("/student/api/resumes", {
+            studentId: String(studentId),
+            skills: skills || [],
+            experience: experience || [],
         });
-        return response.ok;
-    } catch (error) {
-        console.error("Error indexing resume:", error);
+        return true;
+    } catch {
         return false;
     }
 };
 
-
-////
+/* PHOTO */
 export const fetchProfilePhotoUrl = async (userId) => {
     try {
-        const response = await authFetch(`${baseUrl}/auth/users/${userId}/profilePhoto`);
-        if (!response.ok) return null;
-        const blob = await response.blob();
-        return URL.createObjectURL(blob);
-    } catch (error) {
-        console.error("Error fetching profile photo:", error);
+        const res = await api.get(
+            `/auth/users/${userId}/profilePhoto`,
+            { responseType: "blob" }
+        );
+        return URL.createObjectURL(res.data);
+    } catch {
         return null;
     }
 };

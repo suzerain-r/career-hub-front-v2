@@ -9,12 +9,18 @@ export default function SettingsLayout({ pageTitle, tabs, activeTab, setActiveTa
 
     return (
         <div className="min-h-screen bg-white">
-            <div className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6">
+            <div className="bg-gray-100 mt-20 py-8 px-6">
+                <div className="max-w-7xl mx-auto">
+                    <h1 className="text-2xl font-medium mb-6">{pageTitle}</h1>
+                    <SettingsTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+                </div>
+            </div>
+            {/* <div className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6">
                 <h1 className="text-3xl font-semibold text-gray-900 py-10">{pageTitle}</h1>
                 <SettingsTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
-            </div>
+            </div> */}
 
-            <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
+            <div className="mx-auto w-full max-w-6xl px-6 py-8">
                 {children}
 
                 {showLogout && (

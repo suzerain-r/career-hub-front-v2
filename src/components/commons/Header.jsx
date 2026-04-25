@@ -6,19 +6,15 @@ import { getIdFromToken, getRoleFromToken } from "../../utils/jwtDecode.js";
 import { fetchProfilePhotoUrl } from "../../services/apiService.js";
 
 const AvatarButton = React.memo(({ avatarUrl, color = "#0A65CC", onClick, show }) => {
-    if (avatarUrl) {
-        return (
-            <img
-                src={avatarUrl}
-                alt="avatar"
-                onClick={onClick}
-                style={{ borderColor: color }}
-                className={`${show ? "" : "hidden md:block"} w-11 h-11 rounded-full object-cover border-2 cursor-pointer hover:scale-110 transition`}
-            />
-        );
-    }
-
-    return (
+    return avatarUrl ? (
+        <img
+            src={avatarUrl}
+            alt="avatar"
+            onClick={onClick}
+            style={{ borderColor: color }}
+            className={`${show ? "" : "hidden md:block"} w-11 h-11 rounded-full object-cover border-2 cursor-pointer hover:scale-110 transition`}
+        />
+    ) : (
         <UserCircleIcon
             onClick={onClick}
             style={{ color }}
@@ -29,37 +25,35 @@ const AvatarButton = React.memo(({ avatarUrl, color = "#0A65CC", onClick, show }
 
 const Header = () => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
-    const [isAuth, setIsAuth] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState(null);
 
     const navigate = useNavigate();
     const location = useLocation();
 
+    const userRole = useMemo(() => getRoleFromToken(), []);
+    const userId = useMemo(() => getIdFromToken(), []);
+    const isAuth = !!userRole;
+
     useEffect(() => {
         document.body.style.overflow = showMobileMenu ? "hidden" : "auto";
-        return () => {
-            document.body.style.overflow = "auto";
-        };
+        return () => (document.body.style.overflow = "auto");
     }, [showMobileMenu]);
 
     useEffect(() => {
-        const role = getRoleFromToken();
-        const isAuthenticated = !!role;
+        if (!isAuth || !userId) return;
 
-        setIsAuth(isAuthenticated);
+        let isMounted = true;
 
-        if (isAuthenticated) {
-            const userId = getIdFromToken();
+        fetchProfilePhotoUrl(userId)
+            .then((url) => {
+                if (url && isMounted) setAvatarUrl(url);
+            })
+            .catch(console.error);
 
-            if (userId) {
-                fetchProfilePhotoUrl(userId)
-                    .then((url) => {
-                        if (url) setAvatarUrl(url);
-                    })
-                    .catch(console.error);
-            }
-        }
-    }, []);
+        return () => {
+            isMounted = false;
+        };
+    }, [isAuth, userId]);
 
     const menuItems = useMemo(() => [
         { label: "Home", path: "/" },
@@ -69,18 +63,15 @@ const Header = () => {
     ], []);
 
     const isActive = useCallback((path) => {
-        if (path === "/") return location.pathname === "/";
-
-        return (
-            location.pathname === path ||
-            location.pathname.startsWith(path + "/")
-        );
+        return path === "/"
+            ? location.pathname === "/"
+            : location.pathname.startsWith(path);
     }, [location.pathname]);
 
-    const handleSignIn = () => navigate("/auth?mode=sign-in");
-    const goToProfile = () => navigate("/profile");
-    const openMenu = () => setShowMobileMenu(true);
-    const closeMenu = () => setShowMobileMenu(false);
+    const handleSignIn = useCallback(() => navigate("/auth?mode=sign-in"), [navigate]);
+    const goToProfile = useCallback(() => navigate("/profile"), [navigate]);
+    const openMenu = useCallback(() => setShowMobileMenu(true), []);
+    const closeMenu = useCallback(() => setShowMobileMenu(false), []);
 
     return (
         <div className='absolute top-0 left-0 w-full z-10'>
@@ -111,7 +102,6 @@ const Header = () => {
                         <AvatarButton
                             avatarUrl={avatarUrl}
                             onClick={goToProfile}
-                            color="#0A65CC"
                         />
                     ) : (
                         <button
@@ -134,12 +124,9 @@ const Header = () => {
             <div className={`fixed inset-0 z-50 md:hidden transition-opacity duration-300 ${
                 showMobileMenu ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
             }`}>
-                <div
-                    onClick={closeMenu}
-                    className="absolute inset-0 bg-black/40"
-                />
+                <div onClick={closeMenu} className="absolute inset-0 bg-black/40" />
 
-                <div className={`absolute right-0 top-0 h-full w-3/4 max-w-xs bg-[#0A65CC] transform transition-transform duration-300 ease-out flex flex-col ${
+                <div className={`absolute right-0 top-0 h-full w-3/4 max-w-xs bg-[#0A65CC] transform transition-transform duration-300 flex flex-col ${
                     showMobileMenu ? "translate-x-0" : "translate-x-full"
                 }`}>
                     <div className='flex justify-between p-5'>
@@ -153,7 +140,7 @@ const Header = () => {
                                 avatarUrl={avatarUrl}
                                 onClick={goToProfile}
                                 color="#FFFFFF"
-                                show={true}
+                                show
                             />
                         )}
                     </div>

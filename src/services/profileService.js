@@ -1,11 +1,17 @@
-import { fetchStudent, fetchUniversity, updateStudentProfile } from "./apiService.js";
+import {
+    fetchStudent,
+    fetchUniversity,
+    fetchCompany,
+    updateStudentProfile,
+    updateUniversityProfile,
+    updateCompanyProfile,
+} from "./apiService.js";
 
-import { fetchCompany, updateUniversityProfile, updateCompanyProfile } from "./apiService.js";
-
-export async function loadProfile(role, userId) {
-    if (role === "STUDENT") {
+const loaders = {
+    STUDENT: async (userId) => {
         const s = await fetchStudent(userId);
         const u = await fetchUniversity(s.universityId);
+
         return {
             data: {
                 ...s,
@@ -18,10 +24,11 @@ export async function loadProfile(role, userId) {
             },
             extra: { university: u },
         };
-    }
+    },
 
-    if (role === "UNIVERSITY") {
-        const u = await fetchUniversity(userId); // если у тебя ownerId = userId, иначе поменяй
+    UNIVERSITY: async (userId) => {
+        const u = await fetchUniversity(userId);
+
         return {
             data: {
                 ...u,
@@ -34,10 +41,11 @@ export async function loadProfile(role, userId) {
             },
             extra: {},
         };
-    }
+    },
 
-    if (role === "COMPANY") {
+    COMPANY: async (userId) => {
         const c = await fetchCompany(userId);
+
         return {
             data: {
                 ...c,
@@ -50,14 +58,31 @@ export async function loadProfile(role, userId) {
             },
             extra: {},
         };
+    },
+};
+
+const savers = {
+    STUDENT: updateStudentProfile,
+    UNIVERSITY: updateUniversityProfile,
+    COMPANY: updateCompanyProfile,
+};
+
+export const loadProfile = async (role, userId) => {
+    const loader = loaders[role];
+
+    if (!loader) {
+        throw new Error("Unknown role: " + role);
     }
 
-    throw new Error("Unknown role: " + role);
-}
+    return await loader(userId);
+};
 
-export async function saveProfile(role, values) {
-    if (role === "STUDENT") return updateStudentProfile(values);
-    if (role === "UNIVERSITY") return updateUniversityProfile(values);
-    if (role === "COMPANY") return updateCompanyProfile(values);
-    throw new Error("Unknown role: " + role);
-}
+export const saveProfile = async (role, values) => {
+    const saver = savers[role];
+
+    if (!saver) {
+        throw new Error("Unknown role: " + role);
+    }
+
+    return await saver(values);
+};

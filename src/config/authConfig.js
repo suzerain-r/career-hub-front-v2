@@ -1,7 +1,6 @@
 export const AUTH_MODES = {
     SIGNIN: "sign-in",
-    REGISTER_ADMIN: "register-admin",
-    REGISTER_STUDENT: "register-student",
+    REGISTER: "register",
     FORGOT: "forgot-password",
     RESET: "reset-password",
 };

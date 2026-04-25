@@ -8,7 +8,7 @@ export const searchConfig = {
         placeholder: "Search university",
         fields: [
             {
-                name: "city",
+                name: "location",
                 type: "select",
                 options: ["Almaty", "Astana"]
             }
@@ -19,7 +19,7 @@ export const searchConfig = {
         placeholder: "Search company",
         fields: [
             {
-                name: "city",
+                name: "location",
                 type: "select",
                 options: ["Almaty", "Astana"]
             }
@@ -27,40 +27,42 @@ export const searchConfig = {
     }
 };
 
-export const searchRules = {
-    STUDENT: {
-        students: {
-            key: "firstName",
-        },
-        universities: {
-            key: "name",
-        },
-        companies: {
-            key: "name",
-        },
-    },
+// export const searchRules = {
+//     STUDENT: {
+//         students: {
+//             key: "name",
 
-    UNIVERSITY: {
-        students: {
-            key: "firstName",
-        },
-        universities: {
-            key: "name",
-        },
-        companies: {
-            key: "name",
-        },
-    },
+//         },
+//         universities: {
+//             key: "name",
+//         },
+//         companies: {
+//             key: "name",
+//         },
+//     },
 
-    COMPANY: {
-        students: {
-            key: "searchQuery",
-        },
-        universities: {
-            key: "name",
-        },
-        companies: {
-            key: "name",
-        },
-    },
-};
+//     UNIVERSITY: {
+//         students: {
+//             key: "name",
+
+//         },
+//         universities: {
+//             key: "name",
+//         },
+//         companies: {
+//             key: "name",
+//         },
+//     },
+
+//     COMPANY: {
+//         students: {
+//             key: "searchQuery",
+//         },
+//         universities: {
+//             key: "name",
+//         },
+//         companies: {
+//             key: "name",
+//         },
+//     },
+// };

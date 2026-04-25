@@ -1,79 +1,76 @@
-const baseUrl = "http://localhost:8080/auth";
+import axios from "axios";
+
+const api = axios.create({
+    baseURL: "http://localhost:8080/auth",
+    headers: {
+        "Content-Type": "application/json",
+    },
+});
+
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem("authToken");
+            window.location.href = "/auth?mode=sign-in";
+        }
+        return Promise.reject(error);
+    }
+);
 
 export const login = async (username, password) => {
-    let url = `${baseUrl}/login`;
-
     try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
+        const { data } = await api.post("/login", {
+            username,
+            password,
         });
 
-        const data = await response.json();
-        if (response.ok) {
-            console.log(data);
-            localStorage.setItem('authToken', data.token);
-            return { success: true };
-        } else {
-            return { success: false, message: data.message };
-        }
+        localStorage.setItem("authToken", data.token);
+
+        return { success: true };
     } catch (error) {
-        console.error('Error during login:', error);
-        return { success: false, message: 'Something went wrong. Please try again.' };
+        return {
+            success: false,
+            message: error.response?.data?.message || "Login error",
+        };
     }
 };
 
+const roleEndpoints = {
+    UNIVERSITY: "/university/registration",
+    COMPANY: "/company/registration",
+    STUDENT: "/student/registration",
+};
 
 export const register = async (role, username, email, password) => {
-    let url = '';
-
-    switch (role.toLowerCase()) {
-        case 'university':
-            url = `${baseUrl}/university/registration`;
-            break;
-        case 'company':
-            url = `${baseUrl}/company/registration`;
-            break;
-        case 'student':
-            url = `${baseUrl}/student/registration`;
-            break;
-        default:
-            throw new Error('Unknown role');
-    }
-
-    const token = localStorage.getItem("authToken");
-    const headers = {
-        'Content-Type': 'application/json',
-    };
-    if (token) {
-        headers.Authorization = `Bearer ${token}`;
-    }
-
     try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-                role: role.toUpperCase(),
-                username,
-                email,
-                password,
-            }),
+        const endpoint = roleEndpoints[role.toUpperCase()];
+
+        if (!endpoint) {
+            return { success: false, message: "Unknown role" };
+        }
+
+        const { data } = await api.post(endpoint, {
+            role: role.toUpperCase(),
+            username,
+            email,
+            password,
         });
 
-        const data = await response.json();
-
-        if (response.ok) {
-            return { success: true, data };
-        } else {
-            return { success: false, message: data.message };
-        }
+        return { success: true, data };
     } catch (error) {
-        console.error('Error during registration:', error);
-        return { success: false, message: 'Something went wrong. Please try again.' };
+        return {
+            success: false,
+            message: error.response?.data?.message || "Registration error",
+        };
     }
 };
 

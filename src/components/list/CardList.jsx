@@ -1,103 +1,95 @@
-
 import { useNavigate } from "react-router-dom";
-import { assets } from "../../assets/assets.js";
 
-// "students" | "universities" | "companies" -> "student" | "university" | "company"
+// "students" | "universities" | "companies" -> role mapping
 const LIST_TYPE_TO_ROLE = {
     students: "student",
     universities: "university",
     companies: "company",
 };
 
-const CardList = ({ list, icon, title, fields, avatars = {}, listType }) => {
+const CardList = ({
+    list,
+    icon,
+    title,
+    fields,
+    avatars = {},
+    listType,
+}) => {
     const navigate = useNavigate();
 
-    const getTitle = (item, titleFields) => {
-        return titleFields
-            .map((field) => item[field])
+    const role = LIST_TYPE_TO_ROLE[listType];
+
+    const getTitle = (item) =>
+        title
+            .map((field) => item?.[field])
             .filter(Boolean)
             .join(" ");
-    };
 
-    const getPhotoId = (item) => item.ownerId ?? item.id;
+    const getPhotoId = (item) => item?.ownerId ?? item?.id;
 
     const handleViewProfile = (item) => {
-        const role = LIST_TYPE_TO_ROLE[listType];
-        const id = item.ownerId ?? item.id;
+        const id = item?.ownerId ?? item?.id;
         if (!role || !id) return;
-        navigate(`/profile/${role}/${id}`);
+        navigate(`/${role}/${id}`);
     };
 
     return (
         <div className="w-full lg:w-3/4 flex flex-col gap-4">
-            {list.map((user) => {
-                const avatarUrl = avatars[getPhotoId(user)];
+            {list.map((item) => {
+                const photoId = getPhotoId(item);
+                const avatarUrl = avatars?.[photoId];
+
                 return (
-                <div
-                    key={user.id}
-                    className="flex flex-row gap-3 p-3 sm:p-6 bg-white border border-gray-200 rounded-xl hover:border-blue-500 transition"
-                >
-                    {avatarUrl ? (
-                        <img
-                            src={avatarUrl}
-                            alt=""
-                            className="w-18 h-18 sm:w-20 sm:h-20 rounded-full object-cover"
-                        />
-                    ) : (
-                        <img
-                            src={icon}
-                            alt=""
-                            className="w-18 h-18 sm:w-20 sm:h-20 object-contain"
-                        />
-                    )}
+                    <div
+                        key={photoId}
+                        className="flex gap-3 p-3 sm:p-6 bg-white border border-gray-200 rounded-xl hover:border-blue-500 transition"
+                    >
+                        {/* Avatar */}
+                        {avatarUrl ? (
+                            <img
+                                src={avatarUrl}
+                                alt="avatar"
+                                className="w-18 h-18 sm:w-20 sm:h-20 rounded-full object-cover"
+                            />
+                        ) : (
+                            <img
+                                src={icon}
+                                alt=""
+                                className="w-18 h-18 sm:w-20 sm:h-20 object-contain"
+                            />
+                        )}
 
-                    <div className="flex justify-between items-center sm:items-center w-full gap-3">
+                        {/* Content */}
+                        <div className="flex justify-between w-full gap-3 items-center">
+                            <div className="flex flex-col">
+                                <h3 className="font-medium text-base sm:text-lg">
+                                    {getTitle(item)}
+                                </h3>
 
-                        <div className="flex flex-col">
-                            <h3 className="font-medium text-base sm:text-lg">
-                                {getTitle(user, title)}
-                            </h3>
-                            {fields.map((field) => (
-                                <p className="text-gray-500 text-sm" key={field.key}>
-                                    {field.label}: {user[field.key]}
-                                </p>
-                            ))}
-                        </div>
+                                {fields.map((field) => (
+                                    <p
+                                        key={field.key}
+                                        className="text-gray-500 text-sm"
+                                    >
+                                        {field.label}: {item?.[field.key]}
+                                    </p>
+                                ))}
+                            </div>
 
-                        <div className="flex items-center gap-2">
-                            {/* <button
-                                onClick={() => toggleFavorite(user.ownerId)}
-                                className="hover:opacity-80"
-                            >
-                                <img
-                                    src={
-                                        isFavorite(student.ownerId)
-                                            ? assets.favourite_active
-                                            : assets.favourite_not_active
-                                    }
-
-                                    alt=""
-                                    className="w-6 h-6 sm:w-7 sm:h-7"
-                                />
-                            </button> */}
-
+                            {/* Action */}
                             <button
-                                onClick={() => handleViewProfile(user)}
-                                className="lg:hidden bg-blue-50 text-blue-500 px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white transition"
+                                onClick={() => handleViewProfile(item)}
+                                className="
+                                    bg-blue-50 text-blue-500
+                                    px-4 py-2 rounded-md
+                                    hover:bg-blue-500 hover:text-white
+                                    transition
+                                "
                             >
-                                →
-                            </button>
-
-                            <button
-                                onClick={() => handleViewProfile(user)}
-                                className="hidden lg:inline-block bg-blue-50 text-blue-500 px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white transition"
-                            >
-                                View Profile →
+                                View →
                             </button>
                         </div>
-
                     </div>
-                </div>
                 );
             })}
         </div>
