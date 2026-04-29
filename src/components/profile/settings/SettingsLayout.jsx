@@ -8,17 +8,13 @@ export default function SettingsLayout({ pageTitle, tabs, activeTab, setActiveTa
     const showLogout = onLogout && activeTab === firstTabKey;
 
     return (
-        <div className="min-h-screen bg-white">
+        <>
             <div className="bg-gray-100 mt-20 py-8 px-6">
                 <div className="max-w-7xl mx-auto">
                     <h1 className="text-2xl font-medium mb-6">{pageTitle}</h1>
                     <SettingsTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
                 </div>
             </div>
-            {/* <div className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6">
-                <h1 className="text-3xl font-semibold text-gray-900 py-10">{pageTitle}</h1>
-                <SettingsTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
-            </div> */}
 
             <div className="mx-auto w-full max-w-6xl px-6 py-8">
                 {children}
@@ -28,7 +24,7 @@ export default function SettingsLayout({ pageTitle, tabs, activeTab, setActiveTa
                         <button
                             type="button"
                             onClick={onLogout}
-                            className="inline-flex items-center gap-2 rounded-xl border border-red-500 px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 active:bg-red-100"
+                            className="inline-flex items-center gap-2 rounded-xl border border-red-500 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 active:bg-red-100"
                         >
                             <ArrowRightOnRectangleIcon className="w-5 h-5" />
                             Logout
@@ -36,6 +32,6 @@ export default function SettingsLayout({ pageTitle, tabs, activeTab, setActiveTa
                     </div>
                 )}
             </div>
-        </div>
+        </>
     );
 }

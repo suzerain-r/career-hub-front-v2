@@ -6,9 +6,10 @@ import ProfileForm from "../../components/profile/settings/ProfileForm.jsx";
 import MyStudentsSection from "../../components/profile/settings/MyStudentsSection.jsx";
 import ResumeSection from "../../components/profile/settings/ResumeSection.jsx";
 import SavedStudentsSection from "../../components/profile/settings/SavedStudentsSection.jsx";
+import ReviewSection from "../../components/profile/review/ReviewSection.jsx";
 import { profileConfigs } from "../../config/profileConfig.js";
 import { loadProfile, saveProfile } from "../../services/profileService.js";
-import { uploadProfilePhoto, fetchProfilePhotoUrl } from "../../services/apiService.js";
+import { uploadProfilePhoto, fetchProfilePhotoUrl, fetchReviews, addReview } from "../../services/apiService.js";
 import { logout } from "../../services/authService.js";
 import Header from "../../components/commons/Header.jsx";
 import Footer from "../../components/commons/Footer.jsx";
@@ -56,6 +57,12 @@ export default function ProfilePage() {
     const [values, setValues] = useState({});
     const [savedValues, setSavedValues] = useState({});
 
+    const [reviews, setReviews] = useState([]);
+    const [review, setReview] = useState({
+        reviewText: "",
+        rating: 0,
+    });
+
     useEffect(() => {
         // при смене просмотра — возвращаем на personal и гасим редактирование
         setActiveTab("personal");
@@ -76,6 +83,14 @@ export default function ProfilePage() {
             if (url) setAvatarUrl(url);
         })().catch((e) => console.error(e));
     }, [role, userId]);
+
+    useEffect(() => {
+        if (!userId) return;
+
+        fetchReviews(userId)
+            .then((data) => setReviews(data?.content || []))
+            .catch(console.error);
+    }, [userId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -184,15 +199,37 @@ export default function ProfilePage() {
     return (
         <>
             <Header />
-            <SettingsLayout
-                pageTitle={isViewOnly ? "Profile" : config.pageTitle}
-                tabs={config.tabs}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                onLogout={isViewOnly ? null : handleLogout}
-            >
-                {renderContent()}
-            </SettingsLayout>
+            <div className="min-h-screen flex flex-col">
+                <SettingsLayout
+                    pageTitle={isViewOnly ? "Profile" : config.pageTitle}
+                    tabs={config.tabs}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    onLogout={isViewOnly ? null : handleLogout}
+                >
+                    {renderContent()}
+                </SettingsLayout>
+                {activeTab === "personal" && (
+                    <ReviewSection
+                        reviews={reviews}
+                        setReviews={setReviews}
+                        role={role}
+                        review={review}
+                        setReview={setReview}
+                        onReviewSubmit={async () => {
+                            await addReview({
+                                ...review,
+                                recipientId: userId,
+                                senderId: selfId,
+                                recipientRole: role,
+                            });
+                        }}
+                        userId={userId}
+                        selfRole={selfRole}
+                    />
+                )}
+            </div>
+
             <Footer />
         </>
     );

@@ -11,7 +11,7 @@ const ProfileInput = ({
 }) => {
     return (
         <div className="w-full">
-            <label className="mb-2 block text-sm font-semibold text-gray-800">
+            <label className="mb-2 block text-sm font-medium text-gray-800">
                 {title}
             </label>
 

@@ -184,7 +184,7 @@ export default function ResumeSection() {
     return (
         <div className="mt-4">
             <div>
-                <h2 className="text-2xl font-semibold text-gray-900">My Resume</h2>
+                <h2 className="text-2xl font-medium text-gray-900">My Resume</h2>
                 <p className="mt-1 text-sm text-gray-500">
                     Your skills and experience are indexed for smart search. Companies find you
                     based on these keywords.

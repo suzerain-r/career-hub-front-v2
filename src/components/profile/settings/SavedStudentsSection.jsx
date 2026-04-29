@@ -26,7 +26,7 @@ function ConfirmRemoveModal({ open, student, onClose, onConfirm, submitting }) {
             />
 
             <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                <h3 className="text-xl font-semibold text-gray-900">Remove from saved?</h3>
+                <h3 className="text-xl font-medium text-gray-900">Remove from saved?</h3>
                 <p className="mt-2 text-sm text-gray-600">
                     Remove <span className="font-medium text-gray-900">{fullName}</span> from
                     your saved candidates? You can add them back later.
@@ -234,13 +234,13 @@ export default function SavedStudentsSection() {
     const handleViewProfile = (student) => {
         const id = student.ownerId ?? student.id;
         if (!id) return;
-        navigate(`/profile/student/${id}`);
+        navigate(`/student/${id}`);
     };
 
     return (
         <div className="mt-4">
             <div>
-                <h2 className="text-2xl font-semibold text-gray-900">Saved Candidates</h2>
+                <h2 className="text-2xl font-medium text-gray-900">Saved Candidates</h2>
                 <p className="mt-1 text-sm text-gray-500">
                     Students you bookmarked from the search. Keep an eye on them here.
                 </p>

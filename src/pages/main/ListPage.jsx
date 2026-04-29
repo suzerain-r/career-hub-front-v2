@@ -19,7 +19,9 @@ import {
     fetchStudents,
     fetchUniversities,
     fetchCompanies,
-    fetchProfilePhotoUrl
+    fetchProfilePhotoUrl,
+    fetchFavorites,
+    togFavorite
 } from "../../services/apiService.js";
 
 const ListPage = () => {
@@ -41,6 +43,9 @@ const ListPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [filters, setFilters] = useState({});
     const [searchFilters, setSearchFilters] = useState({});
+    const [favorites, setFavorites] = useState([]);
+    const [appliedFilters, setAppliedFilters] = useState({});
+    const [appliedSearchFilters, setAppliedSearchFilters] = useState({});
 
     const fetchMap = {
         students: fetchStudents,
@@ -62,7 +67,7 @@ const ListPage = () => {
         // =========================
         // FILTERS (city и другие)
         // =========================
-        Object.entries(filters).forEach(([key, value]) => {
+        Object.entries(appliedFilters).forEach(([key, value]) => {
             if (!value) return;
 
             if (key === "gpa") {
@@ -80,7 +85,7 @@ const ListPage = () => {
         // =========================
         // SEARCH LOGIC (FIXED)
         // =========================
-        Object.entries(searchFilters).forEach(([key, value]) => {
+        Object.entries(appliedSearchFilters).forEach(([key, value]) => {
             if (!value) return;
 
             if (key !== "search") {
@@ -125,18 +130,32 @@ const ListPage = () => {
         });
 
         // COMPANY → students filter
-        if (userRole === "COMPANY" && type === "students") {
+        const hasSearch =
+            appliedSearchFilters.search &&
+            appliedSearchFilters.search.trim() !== "";
+
+        if (
+            userRole === "COMPANY" &&
+            type === "students" &&
+            hasSearch
+        ) {
             params.companyId = userId;
         }
 
         return new URLSearchParams(params).toString();
     }, [
-        filters,
-        searchFilters,
+        appliedFilters,
+        appliedSearchFilters,
         currentPage,
         pageSize,
         type
     ]);
+
+    const handleSearch = () => {
+        setCurrentPage(1);
+        setAppliedFilters(filters);
+        setAppliedSearchFilters(searchFilters);
+    };
 
     // =========================
     // FETCH DATA
@@ -214,8 +233,44 @@ const ListPage = () => {
     const handleClearFilters = () => {
         setFilters({});
         setSearchFilters({});
+        setAppliedFilters({});
+        setAppliedSearchFilters({});
         setCurrentPage(1);
     };
+
+    // =========================
+    // FAVORITE
+    // =========================
+
+    useEffect(() => {
+        if (userRole === "COMPANY") {
+            fetchFavorites(userId).then((data) => setFavorites(data));
+        }
+    }, [userId, userRole]);
+    const isFavorite = (id) =>
+        Array.isArray(favorites) && favorites.includes(id);
+
+    const toggleFavorite = async (id) => {
+        const currentlyFavorite = isFavorite(id);
+
+        await togFavorite(userId, id, currentlyFavorite);
+
+        if (!currentlyFavorite) {
+            setFavorites((prev) => [...prev, id]);
+        } else {
+            setFavorites((prev) =>
+                prev.filter((favId) => favId !== id)
+            );
+        }
+    };
+
+    useEffect(() => {
+        setFilters({});
+        setSearchFilters({});
+        setAppliedFilters({});
+        setAppliedSearchFilters({});
+        setCurrentPage(1);
+    }, [type]);
 
     // =========================
     // RENDER
@@ -236,6 +291,7 @@ const ListPage = () => {
                             fields={searchCon.fields}
                             placeholder={searchCon.placeholder}
                             onFilterChange={handleSearchFilterChange}
+                            onSearch={handleSearch}
                             onOpenFilters={() => setIsSidebarOpen(true)}
                         />
                     </div>
@@ -260,6 +316,9 @@ const ListPage = () => {
                             fields={cardCon.fields}
                             avatars={avatars}
                             listType={type}
+                            toggleFavorite={toggleFavorite}
+                            isFavorite={isFavorite}
+                            userRole={userRole}
                         />
                     </div>
                 </div>

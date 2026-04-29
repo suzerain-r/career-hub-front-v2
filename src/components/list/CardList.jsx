@@ -1,4 +1,7 @@
 import { useNavigate } from "react-router-dom";
+import { assets } from "../../assets/assets";
+import { BookmarkIcon as BookmarkOutline } from "@heroicons/react/24/outline";
+import { BookmarkIcon as BookmarkSolid } from "@heroicons/react/24/solid";
 
 // "students" | "universities" | "companies" -> role mapping
 const LIST_TYPE_TO_ROLE = {
@@ -14,6 +17,9 @@ const CardList = ({
     fields,
     avatars = {},
     listType,
+    toggleFavorite,
+    isFavorite,
+    userRole
 }) => {
     const navigate = useNavigate();
 
@@ -42,25 +48,26 @@ const CardList = ({
                 return (
                     <div
                         key={photoId}
-                        className="flex gap-3 p-3 sm:p-6 bg-white border border-gray-200 rounded-xl hover:border-blue-500 transition"
+                        className="flex justify-between gap-4 sm:gap-3 p-4 sm:p-6 bg-white border border-gray-200 rounded-xl hover:border-blue-500 transition"
                     >
-                        {/* Avatar */}
-                        {avatarUrl ? (
-                            <img
-                                src={avatarUrl}
-                                alt="avatar"
-                                className="w-18 h-18 sm:w-20 sm:h-20 rounded-full object-cover"
-                            />
-                        ) : (
-                            <img
-                                src={icon}
-                                alt=""
-                                className="w-18 h-18 sm:w-20 sm:h-20 object-contain"
-                            />
-                        )}
+
 
                         {/* Content */}
-                        <div className="flex justify-between w-full gap-3 items-center">
+                        <div className="flex gap-3 items-center">
+                            {/* Avatar */}
+                            {avatarUrl ? (
+                                <img
+                                    src={avatarUrl}
+                                    alt="avatar"
+                                    className="w-18 h-18 sm:w-20 sm:h-20 rounded-full object-cover"
+                                />
+                            ) : (
+                                <img
+                                    src={icon}
+                                    alt=""
+                                    className="w-18 h-18 sm:w-20 sm:h-20 object-contain"
+                                />
+                            )}
                             <div className="flex flex-col">
                                 <h3 className="font-medium text-base sm:text-lg">
                                     {getTitle(item)}
@@ -76,17 +83,33 @@ const CardList = ({
                                 ))}
                             </div>
 
+
+
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {userRole === "COMPANY" && listType === "students" && (
+                                <button
+                                    onClick={() => toggleFavorite(item.ownerId)}
+                                >
+                                    {isFavorite(item.ownerId) ? (
+                                        <BookmarkSolid className="w-6 h-6 text-[#0A65CC]" />
+                                    ) : (
+                                        <BookmarkOutline className="w-6 h-6 text-gray-400 hover:text-blue-500 transition" />
+                                    )}
+                                </button>
+                            )}
+
                             {/* Action */}
                             <button
                                 onClick={() => handleViewProfile(item)}
-                                className="
-                                    bg-blue-50 text-blue-500
-                                    px-4 py-2 rounded-md
-                                    hover:bg-blue-500 hover:text-white
-                                    transition
-                                "
+                                className="bg-blue-50 text-blue-500
+                                px-4 sm:px-6 py-2 rounded-md
+                               hover:bg-blue-500 hover:text-white
+                                transition
+                                flex items-center"
                             >
-                                View →
+                                <span className="hidden sm:inline">View →</span>
+                                <span className="sm:hidden">→</span>
                             </button>
                         </div>
                     </div>

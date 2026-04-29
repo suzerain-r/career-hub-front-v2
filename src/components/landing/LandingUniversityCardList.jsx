@@ -85,7 +85,7 @@ const LandingUniversityCardList = () => {
 
                         <button
                             onClick={() => handleViewProfile(u)}
-                            className="mt-6 bg-[#E7F0FA] text-[#0A65CC] font-semibold py-3 rounded-md transition-all duration-300 hover:bg-[#0A65CC] hover:text-white"
+                            className="mt-6 bg-[#E7F0FA] text-[#0A65CC] font-medium py-3 rounded-md transition-all duration-300 hover:bg-[#0A65CC] hover:text-white"
                         >
                             Open Profile
                         </button>

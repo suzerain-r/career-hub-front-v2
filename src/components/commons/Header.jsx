@@ -4,6 +4,7 @@ import { assets } from "../../assets/assets.js";
 import { ArrowLeftIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import { getIdFromToken, getRoleFromToken } from "../../utils/jwtDecode.js";
 import { fetchProfilePhotoUrl } from "../../services/apiService.js";
+import { Bars3Icon } from "@heroicons/react/24/outline";
 
 const AvatarButton = React.memo(({ avatarUrl, color = "#0A65CC", onClick, show }) => {
     return avatarUrl ? (
@@ -86,11 +87,10 @@ const Header = () => {
                         <li
                             key={item.path}
                             onClick={() => navigate(item.path)}
-                            className={`cursor-pointer transition ${
-                                isActive(item.path)
-                                    ? "text-[#0A65CC] font-medium"
-                                    : "hover:text-[#0A65CC]"
-                            }`}
+                            className={`cursor-pointer transition ${isActive(item.path)
+                                ? "text-[#0A65CC] font-medium"
+                                : "hover:text-[#0A65CC]"
+                                }`}
                         >
                             {item.label}
                         </li>
@@ -112,23 +112,19 @@ const Header = () => {
                         </button>
                     )}
 
-                    <img
+                    <Bars3Icon
                         onClick={openMenu}
-                        src={assets.menu_icon}
-                        className='md:hidden w-7 cursor-pointer'
-                        alt=''
+                        className="md:hidden w-9 h-9 text-[#0A65CC] cursor-pointer"
                     />
                 </div>
             </div>
 
-            <div className={`fixed inset-0 z-50 md:hidden transition-opacity duration-300 ${
-                showMobileMenu ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-            }`}>
+            <div className={`fixed inset-0 z-50 md:hidden transition-opacity duration-300 ${showMobileMenu ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                }`}>
                 <div onClick={closeMenu} className="absolute inset-0 bg-black/40" />
 
-                <div className={`absolute right-0 top-0 h-full w-3/4 max-w-xs bg-[#0A65CC] transform transition-transform duration-300 flex flex-col ${
-                    showMobileMenu ? "translate-x-0" : "translate-x-full"
-                }`}>
+                <div className={`absolute right-0 top-0 h-full w-3/4 max-w-xs bg-[#0A65CC] transform transition-transform duration-300 flex flex-col ${showMobileMenu ? "translate-x-0" : "translate-x-full"
+                    }`}>
                     <div className='flex justify-between p-5'>
                         <ArrowLeftIcon
                             onClick={closeMenu}
@@ -154,11 +150,10 @@ const Header = () => {
                                         navigate(item.path);
                                         closeMenu();
                                     }}
-                                    className={`cursor-pointer transition ${
-                                        isActive(item.path)
-                                            ? "text-gray-800 font-medium"
-                                            : "hover:text-gray-800"
-                                    }`}
+                                    className={`cursor-pointer transition ${isActive(item.path)
+                                        ? "text-gray-800 font-medium"
+                                        : "hover:text-gray-800"
+                                        }`}
                                 >
                                     {item.label}
                                 </li>
@@ -171,7 +166,7 @@ const Header = () => {
                                     handleSignIn();
                                     closeMenu();
                                 }}
-                                className="bg-white text-[#0A65CC] px-8 py-2 mb-6 rounded-xl font-semibold hover:bg-gray-200 transition"
+                                className="bg-white text-[#0A65CC] px-8 py-2 mb-6 rounded-xl font-medium hover:bg-gray-200 transition"
                             >
                                 Sign up
                             </button>

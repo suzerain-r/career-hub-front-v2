@@ -97,7 +97,16 @@ export const fetchSenders = async (reviews) => {
                 const { data } = await api.get(
                     `/${r.senderRole.toLowerCase()}/${r.senderId}`
                 );
-                return { ...r, senderName: data.name };
+
+                let senderName = "";
+
+                if (r.senderRole === "STUDENT") {
+                    senderName = `${data.firstName} ${data.lastName}`;
+                } else {
+                    senderName = data.name;
+                }
+
+                return { ...r, senderName };
             })
         );
     } catch (e) {

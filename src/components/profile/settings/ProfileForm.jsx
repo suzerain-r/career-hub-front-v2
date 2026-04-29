@@ -19,7 +19,7 @@ export default function ProfileForm({
         <div className="space-y-12">
             {config.sections.map((section) => (
                 <div key={section.title}>
-                    <h2 className="text-2xl font-semibold text-gray-900">{section.title}</h2>
+                    <h2 className="text-2xl font-medium text-gray-900">{section.title}</h2>
 
                     <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
                         {section.withPhoto && (
@@ -88,7 +88,7 @@ export default function ProfileForm({
                                     <button
                                         type="button"
                                         onClick={onSave}
-                                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#0A65CC] px-8 py-4 text-base font-semibold text-white hover:bg-[#0957b0] active:bg-[#074a96] sm:w-60"
+                                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#0A65CC] px-8 py-4 text-base font-medium text-white hover:bg-[#0957b0] active:bg-[#074a96] sm:w-60"
                                     >
                                         Save Changes
                                     </button>

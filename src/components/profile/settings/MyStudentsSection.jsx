@@ -43,7 +43,7 @@ function AddStudentModal({ open, onClose, onSuccess }) {
             />
 
             <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                <h3 className="text-xl font-semibold text-gray-900">Add student</h3>
+                <h3 className="text-xl font-medium text-gray-900">Add student</h3>
                 <p className="mt-1 text-sm text-gray-500">
                     The credentials will be sent to the student's email.
                 </p>
@@ -131,7 +131,7 @@ function ConfirmDeleteModal({ open, student, onClose, onConfirm, submitting }) {
             />
 
             <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                <h3 className="text-xl font-semibold text-gray-900">Delete student?</h3>
+                <h3 className="text-xl font-medium text-gray-900">Delete student?</h3>
                 <p className="mt-2 text-sm text-gray-600">
                     You are about to permanently delete <span className="font-medium text-gray-900">{fullName}</span>. This action cannot be undone.
                 </p>
@@ -263,7 +263,7 @@ export default function MyStudentsSection() {
         <div className="mt-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h2 className="text-2xl font-semibold text-gray-900">My Students</h2>
+                    <h2 className="text-2xl font-medium text-gray-900">My Students</h2>
                     <p className="mt-1 text-sm text-gray-500">
                         Students registered under your university.
                     </p>
@@ -302,22 +302,22 @@ export default function MyStudentsSection() {
                     <table className="min-w-full divide-y divide-gray-100 bg-white">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                     Name
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                     Email
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                     Degree
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                     GPA
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                     Year
                                 </th>
-                                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
                                     Actions
                                 </th>
                             </tr>

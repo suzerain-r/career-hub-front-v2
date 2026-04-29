@@ -35,7 +35,7 @@ export default function UploadBox({title = "Profile Picture", hint, file, onFile
                         </svg>
                     </div>
 
-                    <div className="mt-4 text-sm font-semibold text-gray-900">
+                    <div className="mt-4 text-sm font-medium text-gray-900">
                         {readOnly ? "No photo" : "Browse photo or drop here"}
                     </div>
 
