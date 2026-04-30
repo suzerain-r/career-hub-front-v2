@@ -217,3 +217,8 @@ export const fetchProfilePhotoUrl = async (userId) => {
         return null;
     }
 };
+
+/* RECOMENDATIONS */
+
+export const fetchRecomendations = async (query) =>
+    unwrap(await api.get(`/student/api/recommendations?${query}`));

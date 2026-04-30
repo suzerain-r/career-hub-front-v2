@@ -5,8 +5,11 @@ const SideBar = ({
     filterConfig,
     onFilterChange,
     onClearFilters,
+    onRecommend,
     isOpen,
-    onClose
+    onClose,
+    type,
+    userRole
 }) => {
 
     // =========================
@@ -41,6 +44,18 @@ const SideBar = ({
         ))
     );
 
+
+    const renderRecommend = () => (
+        type === "students" && userRole === "COMPANY" && (
+            <button
+                onClick={onRecommend}
+                className="mt-4 w-full bg-green-50 text-green-600 py-2 rounded-md hover:border hover:border-green-600 transition"
+            >
+                Recommendation
+            </button>
+        )
+    );
+
     // =========================
     // CLEAR BUTTON
     // =========================
@@ -60,6 +75,7 @@ const SideBar = ({
             ========================= */}
             <div className="lg:w-1/4 hidden lg:block border border-gray-200 rounded-xl p-6 h-fit">
                 {renderFilters()}
+                {renderRecommend()}
                 {renderClear()}
             </div>
 
@@ -88,6 +104,7 @@ const SideBar = ({
                     </div>
 
                     {renderFilters()}
+                    {renderRecommend()}
                     {renderClear()}
                 </div>
             </div>

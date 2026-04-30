@@ -15,13 +15,16 @@ import { filtersConfig } from "../../config/filtersConfig.js";
 import { cardConfig } from "../../config/cardConfig.js";
 
 import { getIdFromToken, getRoleFromToken } from "../../utils/jwtDecode.js";
+
 import {
     fetchStudents,
     fetchUniversities,
     fetchCompanies,
     fetchProfilePhotoUrl,
     fetchFavorites,
-    togFavorite
+    togFavorite,
+    fetchRecomendations,
+    fetchStudent
 } from "../../services/apiService.js";
 
 const ListPage = () => {
@@ -35,18 +38,6 @@ const ListPage = () => {
     const filtersCon = filtersConfig[type];
     const cardCon = cardConfig[type];
 
-    const [list, setList] = useState([]);
-    const [avatars, setAvatars] = useState({});
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [pageSize] = useState(3);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [filters, setFilters] = useState({});
-    const [searchFilters, setSearchFilters] = useState({});
-    const [favorites, setFavorites] = useState([]);
-    const [appliedFilters, setAppliedFilters] = useState({});
-    const [appliedSearchFilters, setAppliedSearchFilters] = useState({});
-
     const fetchMap = {
         students: fetchStudents,
         universities: fetchUniversities,
@@ -56,7 +47,31 @@ const ListPage = () => {
     const fetchData = fetchMap[type];
 
     // =========================
-    // QUERY BUILDER
+    // STATE
+    // =========================
+    const [list, setList] = useState([]);
+    const [avatars, setAvatars] = useState({});
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [pageSize] = useState(3);
+
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    const [filters, setFilters] = useState({});
+    const [searchFilters, setSearchFilters] = useState({});
+    const [appliedFilters, setAppliedFilters] = useState({});
+    const [appliedSearchFilters, setAppliedSearchFilters] = useState({});
+
+    const [favorites, setFavorites] = useState([]);
+
+    // ✅ единый режим вместо 2 boolean
+    const [mode, setMode] = useState("default");
+    // "default" | "search" | "recommend"
+
+    const [recommendMessage, setRecommendMessage] = useState(null);
+
+    // =========================
+    // QUERY
     // =========================
     const query = useMemo(() => {
         const params = {
@@ -64,9 +79,6 @@ const ListPage = () => {
             size: pageSize,
         };
 
-        // =========================
-        // FILTERS (city и другие)
-        // =========================
         Object.entries(appliedFilters).forEach(([key, value]) => {
             if (!value) return;
 
@@ -75,16 +87,10 @@ const ListPage = () => {
                 params.minGpa = min;
                 params.maxGpa = max;
             } else {
-                params[key] = value; // city → сюда уже попадёт
+                params[key] = value;
             }
         });
 
-        // =========================
-        // SEARCH LOGIC (УЛУЧШЕННАЯ)
-        // =========================
-        // =========================
-        // SEARCH LOGIC (FIXED)
-        // =========================
         Object.entries(appliedSearchFilters).forEach(([key, value]) => {
             if (!value) return;
 
@@ -126,77 +132,189 @@ const ListPage = () => {
                 params.name = value;
                 return;
             }
-
         });
-
-        // COMPANY → students filter
-        const hasSearch =
-            appliedSearchFilters.search &&
-            appliedSearchFilters.search.trim() !== "";
 
         if (
             userRole === "COMPANY" &&
             type === "students" &&
-            hasSearch
+            appliedSearchFilters.search?.trim()
         ) {
             params.companyId = userId;
         }
 
         return new URLSearchParams(params).toString();
-    }, [
-        appliedFilters,
-        appliedSearchFilters,
-        currentPage,
-        pageSize,
-        type
-    ]);
-
-    const handleSearch = () => {
-        setCurrentPage(1);
-        setAppliedFilters(filters);
-        setAppliedSearchFilters(searchFilters);
-    };
+    }, [appliedFilters, appliedSearchFilters, currentPage, pageSize, type]);
 
     // =========================
-    // FETCH DATA
+    // FETCH LIST
     // =========================
     useEffect(() => {
         if (!fetchData) return;
+
+        if (mode === "recommend") return; // ⛔ не перетираем рекомендации
 
         fetchData(query).then((data) => {
             setList(data.content || []);
             setTotalPages(data.totalPages || 1);
         });
-    }, [query, fetchData]);
+    }, [query, fetchData, mode]);
 
     // =========================
-    // AVATAR LOADING
+    // DEFAULT RESET FIX
     // =========================
     useEffect(() => {
-        let cancelled = false;
+        if (mode !== "default") return;
 
-        Object.values(avatars).forEach((url) => {
-            if (url) URL.revokeObjectURL(url);
+        const params = new URLSearchParams({
+            page: 0,
+            size: pageSize
+        }).toString();
+
+        fetchData?.(params).then((data) => {
+            setList(data.content || []);
+            setTotalPages(data.totalPages || 1);
         });
+    }, [mode, type]);
 
-        if (!Array.isArray(list) || list.length === 0) {
+    // =========================
+    // SEARCH
+    // =========================
+    const handleSearch = () => {
+        setMode("search");
+        setCurrentPage(1);
+
+        setAppliedFilters(filters);
+        setAppliedSearchFilters(searchFilters);
+    };
+
+    useEffect(() => {
+        const val = searchFilters.search?.trim();
+
+        if (!val) {
+            setMode("default");
+            setAppliedSearchFilters({});
+            setCurrentPage(1);
+        }
+    }, [searchFilters]);
+
+    // =========================
+    // CLEAR FILTERS
+    // =========================
+    const handleClearFilters = () => {
+        setFilters({});
+        setSearchFilters({});
+        setAppliedFilters({});
+        setAppliedSearchFilters({});
+
+        setRecommendMessage(null);
+        setMode("default");
+        setCurrentPage(1);
+    };
+
+    // =========================
+    // RECOMMENDATIONS
+    // =========================
+    const handleRecommendations = async () => {
+        if (userRole !== "COMPANY") return;
+
+        setMode("recommend");
+
+        try {
+            const params = new URLSearchParams({
+                companyId: userId
+            }).toString();
+
+            const data = await fetchRecomendations(params);
+
+            setRecommendMessage(data.message || null);
+
+            if (!data.students?.length) {
+                setList([]);
+                return;
+            }
+
+            const full = await Promise.all(
+                data.students.map(async (s) => {
+                    try {
+                        const r = await fetchStudent(s.id);
+                        return {
+                            ...r,
+                            recommendedSkills: s.skills,
+                            recommendedExperience: s.experience
+                        };
+                    } catch {
+                        return null;
+                    }
+                })
+            );
+
+            setList(full.filter(Boolean));
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    // =========================
+    // FAVORITES
+    // =========================
+    useEffect(() => {
+        if (userRole === "COMPANY") {
+            fetchFavorites(userId).then(setFavorites);
+        }
+    }, [userId, userRole]);
+
+    const isFavorite = (id) =>
+        favorites.includes(id);
+
+    const toggleFavorite = async (id) => {
+        const fav = isFavorite(id);
+
+        await togFavorite(userId, id, fav);
+
+        setFavorites((prev) =>
+            fav ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    useEffect(() => {
+        setMode("default");
+        setRecommendMessage(null);
+
+        setFilters({});
+        setSearchFilters({});
+        setAppliedFilters({});
+        setAppliedSearchFilters({});
+        setCurrentPage(1);
+        setList([]);
+    }, [type]);
+
+    // =========================
+    // AVATARS
+    // =========================
+    useEffect(() => {
+        let cancel = false;
+
+        if (!list.length) {
             setAvatars({});
             return;
         }
 
         const load = async () => {
             const pairs = await Promise.all(
-                list.map((item) => {
+                list.map(async (item) => {
                     const id = item.ownerId ?? item.id;
                     if (!id) return [null, null];
 
-                    return fetchProfilePhotoUrl(id)
-                        .then((url) => [id, url])
-                        .catch(() => [id, null]);
+                    try {
+                        const url = await fetchProfilePhotoUrl(id);
+                        return [id, url];
+                    } catch {
+                        return [id, null];
+                    }
                 })
             );
 
-            if (cancelled) return;
+            if (cancel) return;
 
             const map = {};
             pairs.forEach(([id, url]) => {
@@ -209,68 +327,9 @@ const ListPage = () => {
         load();
 
         return () => {
-            cancelled = true;
+            cancel = true;
         };
     }, [list]);
-
-    // =========================
-    // HANDLERS
-    // =========================
-    const handleFilterChange = (name, value) => {
-        setFilters((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleSearchFilterChange = (name, value) => {
-        setSearchFilters((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handlePageChange = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
-        }
-    };
-
-    const handleClearFilters = () => {
-        setFilters({});
-        setSearchFilters({});
-        setAppliedFilters({});
-        setAppliedSearchFilters({});
-        setCurrentPage(1);
-    };
-
-    // =========================
-    // FAVORITE
-    // =========================
-
-    useEffect(() => {
-        if (userRole === "COMPANY") {
-            fetchFavorites(userId).then((data) => setFavorites(data));
-        }
-    }, [userId, userRole]);
-    const isFavorite = (id) =>
-        Array.isArray(favorites) && favorites.includes(id);
-
-    const toggleFavorite = async (id) => {
-        const currentlyFavorite = isFavorite(id);
-
-        await togFavorite(userId, id, currentlyFavorite);
-
-        if (!currentlyFavorite) {
-            setFavorites((prev) => [...prev, id]);
-        } else {
-            setFavorites((prev) =>
-                prev.filter((favId) => favId !== id)
-            );
-        }
-    };
-
-    useEffect(() => {
-        setFilters({});
-        setSearchFilters({});
-        setAppliedFilters({});
-        setAppliedSearchFilters({});
-        setCurrentPage(1);
-    }, [type]);
 
     // =========================
     // RENDER
@@ -290,7 +349,9 @@ const ListPage = () => {
                             filters={searchFilters}
                             fields={searchCon.fields}
                             placeholder={searchCon.placeholder}
-                            onFilterChange={handleSearchFilterChange}
+                            onFilterChange={(n, v) =>
+                                setSearchFilters(prev => ({ ...prev, [n]: v }))
+                            }
                             onSearch={handleSearch}
                             onOpenFilters={() => setIsSidebarOpen(true)}
                         />
@@ -303,30 +364,41 @@ const ListPage = () => {
                         <SideBar
                             filters={filters}
                             filterConfig={filtersCon}
-                            onFilterChange={handleFilterChange}
+                            onFilterChange={(n, v) =>
+                                setFilters(prev => ({ ...prev, [n]: v }))
+                            }
                             onClearFilters={handleClearFilters}
+                            onRecommend={handleRecommendations}
                             isOpen={isSidebarOpen}
                             onClose={() => setIsSidebarOpen(false)}
-                        />
-
-                        <CardList
-                            list={list}
-                            icon={assets[cardCon.icon]}
-                            title={cardCon.title}
-                            fields={cardCon.fields}
-                            avatars={avatars}
-                            listType={type}
-                            toggleFavorite={toggleFavorite}
-                            isFavorite={isFavorite}
+                            type={type}
                             userRole={userRole}
                         />
+
+                        {mode === "recommend" && list.length === 0 && recommendMessage ? (
+                            <div className="w-full text-center text-gray-500 mt-10">
+                                {recommendMessage}
+                            </div>
+                        ) : (
+                            <CardList
+                                list={list}
+                                icon={assets[cardCon.icon]}
+                                title={cardCon.title}
+                                fields={cardCon.fields}
+                                avatars={avatars}
+                                listType={type}
+                                toggleFavorite={toggleFavorite}
+                                isFavorite={isFavorite}
+                                userRole={userRole}
+                            />
+                        )}
                     </div>
                 </div>
 
                 <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
-                    onPageChange={handlePageChange}
+                    onPageChange={setCurrentPage}
                 />
             </div>
 
