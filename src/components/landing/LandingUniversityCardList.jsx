@@ -68,11 +68,11 @@ const LandingUniversityCardList = () => {
                             />
 
                             <div className="flex flex-col flex-1 min-w-0">
-                                <h3 className="text-base font-medium text-gray-800 break-words">
+                                <h3 className="text-base font-medium text-gray-800 wrap-break-word">
                                     {u.name}
                                 </h3>
 
-                                <div className="flex items-center text-sm text-gray-500 mt-1 break-words">
+                                <div className="flex items-center text-sm text-gray-500 mt-1 wrap-break-word">
                                     <span className="mr-1">📍</span>
                                     <span>{u.location}</span>
                                 </div>

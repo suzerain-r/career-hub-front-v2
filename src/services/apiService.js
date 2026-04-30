@@ -192,6 +192,28 @@ export const uploadProfilePhoto = async (userId, file) => {
 };
 
 /* ELASTIC */
+
+/** GET */
+export const fetchResume = async (studentId) => {
+    try {
+        const res = await api.get(`/student/api/resumes/${studentId}`);
+        return res.data;
+    } catch {
+        return null;
+    }
+};
+
+/** UPDATE */
+export const updateResume = async (studentId, request) => {
+    try {
+        await api.put(`/student/api/resumes/${studentId}`, request);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
+/* ELASTIC */
 export const indexResume = async ({ studentId, skills, experience }) => {
     try {
         await api.post("/student/api/resumes", {

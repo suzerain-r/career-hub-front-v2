@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
-import { indexResume } from "../../../services/apiService.js";
+import { indexResume, fetchResume, updateResume } from "../../../services/apiService.js";
 import { getIdFromToken } from "../../../utils/jwtDecode.js";
 
 function TagInput({ label, placeholder, values, onChange }) {
@@ -110,7 +110,7 @@ function TagInput({ label, placeholder, values, onChange }) {
                             <button
                                 type="button"
                                 onClick={() => startEdit(i)}
-                                className="max-w-[420px] truncate text-left hover:underline"
+                                className="max-w-105 truncate text-left hover:underline"
                                 title="Click to edit"
                             >
                                 {tag}
@@ -143,7 +143,7 @@ function TagInput({ label, placeholder, values, onChange }) {
                     onKeyDown={handleKeyDown}
                     onBlur={addTag}
                     placeholder={values.length === 0 ? placeholder : ""}
-                    className="min-w-[140px] flex-1 bg-transparent py-1 text-sm outline-none"
+                    className="min-w-35 flex-1 bg-transparent py-1 text-sm outline-none"
                 />
             </div>
 
@@ -162,6 +162,20 @@ export default function ResumeSection() {
     const [submitting, setSubmitting] = useState(false);
     const [status, setStatus] = useState(null);
 
+    useEffect(() => {
+        const loadResume = async () => {
+            if (!studentId) return;
+
+            const data = await fetchResume(studentId);
+            if (!data) return;
+
+            setSkills(data.skills || []);
+            setExperience(data.experience || []);
+        };
+
+        loadResume();
+    }, [studentId]);
+
     const handleSave = async () => {
         if (skills.length === 0 && experience.length === 0) {
             setStatus({ type: "error", text: "Add at least one skill or experience." });
@@ -171,13 +185,19 @@ export default function ResumeSection() {
         setSubmitting(true);
         setStatus(null);
 
-        const ok = await indexResume({ studentId, skills, experience });
+        try {
+            await updateResume(studentId, {
+                skills,
+                experience,
+            });
 
-        setSubmitting(false);
-        if (ok) {
-            setStatus({ type: "success", text: "Resume saved to search index." });
-        } else {
+            await indexResume({ studentId, skills, experience });
+
+            setStatus({ type: "success", text: "Resume saved successfully." });
+        } catch (e) {
             setStatus({ type: "error", text: "Failed to save resume. Try again." });
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -208,11 +228,10 @@ export default function ResumeSection() {
 
                 {status && (
                     <div
-                        className={`rounded-lg px-4 py-3 text-sm ${
-                            status.type === "success"
-                                ? "bg-green-50 text-green-700"
-                                : "bg-red-50 text-red-700"
-                        }`}
+                        className={`rounded-lg px-4 py-3 text-sm ${status.type === "success"
+                            ? "bg-green-50 text-green-700"
+                            : "bg-red-50 text-red-700"
+                            }`}
                     >
                         {status.text}
                     </div>
