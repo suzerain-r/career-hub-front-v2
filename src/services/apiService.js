@@ -2,7 +2,7 @@ import axios from "axios";
 import { getIdFromToken } from "../utils/jwtDecode.js";
 
 const api = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
 });
 
 api.interceptors.request.use((config) => {
@@ -240,7 +240,7 @@ export const fetchProfilePhotoUrl = async (userId) => {
     }
 };
 
-/* RECOMENDATIONS */
+/* RECOMMENDATIONS */
 
-export const fetchRecomendations = async (query) =>
+export const fetchRecommendations = async (query) =>
     unwrap(await api.get(`/student/api/recommendations?${query}`));
